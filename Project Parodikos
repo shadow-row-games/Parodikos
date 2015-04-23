@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html>
+	<!--<head>
+		<title>Project Parodikos</title>
+	</head>-->
 	<pre id="mainText">Yo. Click <input type="button" value="here" onclick="mainMenu();"> to begin.</pre>
+	<pre id="extraTextA" disabled></pre>
 	<script>
 		function playerCharacter(){
 			this.nameSing="";
@@ -59,7 +63,7 @@
 		}
 		function difficulty(){
 			player.nameSing=document.getElementById("nameInput").value;
-			if (name==""){
+			if (player.nameSing==""){
 				return;
 			}
 			document.getElementById("mainText").innerHTML="What difficulty do you want to play on?<br>(This cannot be changed once set.)<br><br><input type='button' value='Normal' onclick='battle(beta)'>";
@@ -70,8 +74,23 @@
 			battleDisplay(enemy,"");
 		}
 		function battleDisplay(enemy, battleText){
-			document.getElementById("mainText").innerHTML=enemy.nameSing+" HP: "+enemy.health+"<br><br><br>"+player.nameSing+" HP: "+player.health+"<br><br>"+battleText+"<br><input id='attackInput' type='button' value='Attack'>";
-			document.getElementById("attackInput").onclick=function(){battleTurn(player,enemy,slash);};
+			var isAttackMenuExpanded=false;
+			document.getElementById("mainText").innerHTML=enemy.nameSing+" HP: "+enemy.health+"<br><br><br>"+player.nameSing+" HP: "+player.health+"<br><br>"+battleText;
+			document.getElementById("extraTextA").innerHTML="<input id='attackInput' type='button' value='Attack'>";
+			//document.getElementById("attackInput").onclick=function(){battleTurn(player,enemy,slash);};
+			document.getElementById("attackInput").onclick=function expandAttackMenu(){
+				if (isAttackMenuExpanded==false){
+					document.getElementById("extraTextA").innerHTML+="-----<input id='primaryAttackInput' type='button' value='Slash'>";
+					document.getElementById("attackInput").onclick=function(){expandAttackMenu();};
+					document.getElementById("primaryAttackInput").onclick=function(){battleTurn(player,enemy,slash);};
+					isAttackMenuExpanded=true;
+				}
+				else{
+					document.getElementById("extraTextA").innerHTML="<input id='attackInput' type='button' value='Attack'>";
+					document.getElementById("attackInput").onclick=function(){expandAttackMenu();};
+					isAttackMenuExpanded=false;
+				}
+			};
 		}
 		function battleTurn(player, enemy, playerMove){
 			var oldPlayerHealth=player.health;
