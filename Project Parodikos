@@ -80,7 +80,8 @@
 			//document.getElementById("attackInput").onclick=function(){battleTurn(player,enemy,slash);};
 			document.getElementById("attackInput").onclick=function expandAttackMenu(){
 				if (isAttackMenuExpanded==false){
-					document.getElementById("extraTextA").innerHTML+="-----<input id='primaryAttackInput' type='button' value='Slash'>";
+					//document.getElementById("extraTextA").innerHTML+="-----<input id='primaryAttackInput' type='button' value='Slash'>";
+					document.getElementById("extraTextA").innerHTML+="<br>|--<input id='primaryAttackInput' type='button' value='Slash'><br>|--<input id='secondaryAttackInput' type='button' value='Stab'><br>|--<input id='tertiaryAttackInput' type='button' value='Slam'>";
 					document.getElementById("attackInput").onclick=function(){expandAttackMenu();};
 					document.getElementById("primaryAttackInput").onclick=function(){battleTurn(player,enemy,slash);};
 					isAttackMenuExpanded=true;
