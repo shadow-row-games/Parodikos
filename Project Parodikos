@@ -6,11 +6,42 @@
 	<pre id="mainText">Yo. Click <input type="button" value="here" onclick="mainMenu();"> to begin.</pre>
 	<pre id="extraTextA" disabled></pre>
 	<script>
+		var slash=new move("Slash",function(user, target){
+			target.health-=10;
+		},function(user, target, userOldHealth, targetOldHealth){
+			var message="";
+			if (user==player){
+				message+="You";
+			}
+			else{
+				if (user.generic==true){
+					message+="The";
+				}
+				message+=" "+user.nameSing;
+			}
+			message+=" slashed";
+			if (target==player){
+				message+=" you";
+			}
+			else{
+				if (target.generic==true){
+					message+=" the";
+				}
+				message+=" "+target.nameSing;
+			}
+			message+=" for "+(targetOldHealth-target.health)+" damage!";
+			return message;
+		});
+		betaSword=new weaponPhysical("Beta Sword",slash,slash,slash);
+		player=new playerCharacter();
+		player.weaponEquipped=betaSword;
+		beta=new enemy("Beta","Betae",true,20);
 		function playerCharacter(){
 			this.nameSing="";
 			this.generic=false;
 			this.maxHealth=100;
 			this.health=this.maxHealth;
+			this.weaponEquipped=0;
 		}
 		function enemy(nameSingParam, namePlParam, genericParam, maxHealthParam){
 			this.nameSing=nameSingParam;
@@ -18,6 +49,12 @@
 			this.generic=genericParam;
 			this.maxHealth=maxHealthParam;
 			this.health=this.maxHealth;
+		}
+		function weaponPhysical(nameSingParam, primaryAttackParam, secondaryAttackParam, tertiaryAttackParam){
+			this.nameSing=nameSingParam;
+			this.primaryAttack=primaryAttackParam;
+			this.secondaryAttack=secondaryAttackParam;
+			this.tertiaryAttack=tertiaryAttackParam;
 		}
 		function move(nameParam, executeParam, battleMessageParam){
 			this.name=nameParam;
@@ -28,34 +65,6 @@
 			document.getElementById("mainText").innerHTML="<input type='button' value='New Game' onclick='newGame();'><br><br><input type='button' value='Load Game' onclick='loadGame();'>";
 		}
 		function newGame(){
-			slash=new move("Slash",function(user, target){
-				target.health-=10;
-			},function(user, target, userOldHealth, targetOldHealth){
-				var message="";
-				if (user==player){
-					message+="You";
-				}
-				else{
-					if (user.generic==true){
-						message+="The";
-					}
-					message+=" "+user.nameSing;
-				}
-				message+=" slashed";
-				if (target==player){
-					message+=" you";
-				}
-				else{
-					if (target.generic==true){
-						message+=" the";
-					}
-					message+=" "+target.nameSing;
-				}
-				message+=" for "+(targetOldHealth-target.health)+" damage!";
-				return message;
-			});
-			player=new playerCharacter();
-			beta=new enemy("Beta","Betae",true,20);
 			setName();
 		}
 		function setName(){
@@ -77,13 +86,13 @@
 			var isAttackMenuExpanded=false;
 			document.getElementById("mainText").innerHTML=enemy.nameSing+" HP: "+enemy.health+"<br><br><br>"+player.nameSing+" HP: "+player.health+"<br><br>"+battleText;
 			document.getElementById("extraTextA").innerHTML="<input id='attackInput' type='button' value='Attack'>";
-			//document.getElementById("attackInput").onclick=function(){battleTurn(player,enemy,slash);};
 			document.getElementById("attackInput").onclick=function expandAttackMenu(){
 				if (isAttackMenuExpanded==false){
-					//document.getElementById("extraTextA").innerHTML+="-----<input id='primaryAttackInput' type='button' value='Slash'>";
-					document.getElementById("extraTextA").innerHTML+="<br>|--<input id='primaryAttackInput' type='button' value='Slash'><br>|--<input id='secondaryAttackInput' type='button' value='Stab'><br>|--<input id='tertiaryAttackInput' type='button' value='Slam'>";
+					document.getElementById("extraTextA").innerHTML+="<br>|--<input id='primaryAttackInput' type='button' value="+player.weaponEquipped.primaryAttack.name+"><br>|--<input id='secondaryAttackInput' type='button' value="+player.weaponEquipped.secondaryAttack.name+"><br>|--<input id='tertiaryAttackInput' type='button' value="+player.weaponEquipped.tertiaryAttack.name+">";
 					document.getElementById("attackInput").onclick=function(){expandAttackMenu();};
-					document.getElementById("primaryAttackInput").onclick=function(){battleTurn(player,enemy,slash);};
+					document.getElementById("primaryAttackInput").onclick=function(){battleTurn(player,enemy,player.weaponEquipped.primaryAttack);};
+					document.getElementById("secondaryAttackInput").onclick=function(){battleTurn(player,enemy,player.weaponEquipped.secondaryAttack);};
+					document.getElementById("tertiaryAttackInput").onclick=function(){battleTurn(player,enemy,player.weaponEquipped.tertiaryAttack);};
 					isAttackMenuExpanded=true;
 				}
 				else{
