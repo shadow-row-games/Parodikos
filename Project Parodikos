@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
-	<!--<head>
-		<title>Project Parodikos</title>
-	</head>-->
+	<title>Project Parodikos</title>
 	<pre id="mainText">Yo. Click <input type="button" value="here" onclick="mainMenu();"> to begin.</pre>
 	<pre id="extraTextA" disabled></pre>
 	<script>
@@ -35,20 +33,26 @@
 		betaSword=new weaponPhysical("Beta Sword",slash,slash,slash);
 		player=new playerCharacter();
 		player.weaponEquipped=betaSword;
-		beta=new enemy("Beta","Betae",true,20);
+		beta=new enemy("Beta","Betae",true,20,1,1,1);
 		function playerCharacter(){
 			this.nameSing="";
 			this.generic=false;
 			this.maxHealth=100;
 			this.health=this.maxHealth;
+			this.attack=4;
+			this.defense=4;
+			this.magic=4;
 			this.weaponEquipped=0;
 		}
-		function enemy(nameSingParam, namePlParam, genericParam, maxHealthParam){
+		function enemy(nameSingParam, namePlParam, genericParam, maxHealthParam, attackParam, defenseParam, magicParam){
 			this.nameSing=nameSingParam;
 			this.namePl=namePlParam;
 			this.generic=genericParam;
 			this.maxHealth=maxHealthParam;
 			this.health=this.maxHealth;
+			this.attac=attackParam;
+			this.defense=defenseParam;
+			this.magic=magicParam;
 		}
 		function weaponPhysical(nameSingParam, primaryAttackParam, secondaryAttackParam, tertiaryAttackParam){
 			this.nameSing=nameSingParam;
