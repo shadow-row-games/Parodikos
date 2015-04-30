@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
+	<meta charset="UTF-8">
 	<title>Project Parodikos</title>
 	<pre id="mainText">Yo. Click <input type="button" value="here" onclick="mainMenu();"> to begin.</pre>
 	<pre id="extraTextA" disabled></pre>
 	<script>
 		var slash=new move("Slash",function(user, target){
-			
+			target.health-=getStandardDamageCurve(user,target,1,0,0);
 		},function(user, target, userOldHealth, targetOldHealth){
 			var message="";
 			if (user==player){
@@ -30,14 +31,11 @@
 			message+=" for "+(targetOldHealth-target.health)+" damage!";
 			return message;
 		});
-		function getStandardDamageCurve(user, target, slash, puncture, impact){
-			var difference=(user.attack+slash)
-			if (slash+slash*(attack
-		}
 		betaSword=new weaponPhysical("Beta Sword",slash,slash,slash);
+		betaArmor=new armor("Beta Armor",0);
 		player=new playerCharacter();
 		player.weaponEquipped=betaSword;
-		beta=new enemy("Beta","Betae",true,20,1,1,1);
+		beta=new enemy("Beta","Betae",true,20,1,1,1,betaArmor);
 		function playerCharacter(){
 			this.nameSing="";
 			this.generic=false;
@@ -47,8 +45,9 @@
 			this.defense=4;
 			this.magic=4;
 			this.weaponEquipped=0;
+			this.armorEquipped=0;
 		}
-		function enemy(nameSingParam, namePlParam, genericParam, maxHealthParam, attackParam, defenseParam, magicParam){
+		function enemy(nameSingParam, namePlParam, genericParam, maxHealthParam, attackParam, defenseParam, magicParam, armorEquippedParam){
 			this.nameSing=nameSingParam;
 			this.namePl=namePlParam;
 			this.generic=genericParam;
@@ -57,6 +56,7 @@
 			this.attac=attackParam;
 			this.defense=defenseParam;
 			this.magic=magicParam;
+			this.armorEquipped=armorEquippedParam;
 		}
 		function weaponPhysical(nameSingParam, primaryAttackParam, secondaryAttackParam, tertiaryAttackParam){
 			this.nameSing=nameSingParam;
@@ -64,10 +64,25 @@
 			this.secondaryAttack=secondaryAttackParam;
 			this.tertiaryAttack=tertiaryAttackParam;
 		}
+		function armor(nameSingParam, slashDefenseParam){
+			this.nameSing=nameSingParam;
+			this.slashDefense=slashDefenseParam;
+		}
 		function move(nameParam, executeParam, battleMessageParam){
 			this.name=nameParam;
 			this.execute=executeParam;
 			this.battleMessage=battleMessageParam;
+		}
+		function getStandardDamageCurve(user, target, slash, puncture, impact){
+			var difference=(user.attack+slash)-(target.defense+target.armorEquipped.slashDefense);
+			var baseDamage=Math.ceil(slash/4);
+			var extraDamage=(1/8)*(2*Math.pow(difference,2)+Math.pow(-1,difference)+7);
+			if (extraDamage>0){
+				return baseDamage+Math.ceil(extraDamage);
+			}
+			else{
+				return baseDamage;
+			}
 		}
 		function mainMenu(){
 			document.getElementById("mainText").innerHTML="<input type='button' value='New Game' onclick='newGame();'><br><br><input type='button' value='Load Game' onclick='loadGame();'>";
