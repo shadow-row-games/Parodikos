@@ -5,7 +5,7 @@
 	<pre id="extraTextA" disabled></pre>
 	<script>
 		var slash=new move("Slash",function(user, target){
-			target.health-=10;
+			
 		},function(user, target, userOldHealth, targetOldHealth){
 			var message="";
 			if (user==player){
@@ -30,6 +30,10 @@
 			message+=" for "+(targetOldHealth-target.health)+" damage!";
 			return message;
 		});
+		function getStandardDamageCurve(user, target, slash, puncture, impact){
+			var difference=(user.attack+slash)
+			if (slash+slash*(attack
+		}
 		betaSword=new weaponPhysical("Beta Sword",slash,slash,slash);
 		player=new playerCharacter();
 		player.weaponEquipped=betaSword;
