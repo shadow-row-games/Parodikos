@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
+	<meta charset="UTF-8">
 	<title>Project Parodikos</title>
 	<pre id="mainText">Yo. Click <input type="button" value="here" onclick="mainMenu();"> to begin.</pre>
 	<pre id="extraTextA" disabled></pre>
 	<script>
 		var slash=new move("Slash",function(user, target){
-			target.health-=10;
+			target.health-=getStandardDamageCurve(user,target,1,0,0);
 		},function(user, target, userOldHealth, targetOldHealth){
 			var message="";
 			if (user==player){
@@ -30,21 +31,101 @@
 			message+=" for "+(targetOldHealth-target.health)+" damage!";
 			return message;
 		});
-		betaSword=new weaponPhysical("Beta Sword",slash,slash,slash);
+		var stab=new move("Stab",function(user, target){
+			target.health-=getStandardDamageCurve(user,target,1,0,0);
+		},function(user, target, userOldHealth, targetOldHealth){
+			var message="";
+			if (user==player){
+				message+="You";
+			}
+			else{
+				if (user.generic==true){
+					message+="The";
+				}
+				message+=" "+user.nameSing;
+			}
+			message+=" stabbed";
+			if (target==player){
+				message+=" you";
+			}
+			else{
+				if (target.generic==true){
+					message+=" the";
+				}
+				message+=" "+target.nameSing;
+			}
+			message+=" for "+(targetOldHealth-target.health)+" damage!";
+			return message;
+		});
+		var bash=new move("Bash",function(user, target){
+			target.health-=getStandardDamageCurve(user,target,0,0,1);
+		},function(user, target, userOldHealth, targetOldHealth){
+			var message="";
+			if (user==player){
+				message+="You";
+			}
+			else{
+				if (user.generic==true){
+					message+="The";
+				}
+				message+=" "+user.nameSing;
+			}
+			message+=" bashed";
+			if (target==player){
+				message+=" you";
+			}
+			else{
+				if (target.generic==true){
+					message+=" the";
+				}
+				message+=" "+target.nameSing;
+			}
+			message+=" for "+(targetOldHealth-target.health)+" damage!";
+			return message;
+		});
+		var bladeCrash=new combo("Blade Crash",[slash,slash,stab],function(user, target){
+			target.health-=getStandardDamageCurve(user,target,3,0,0);
+		},function(user, target, userOldHealth, targetOldHealth){
+			var message="";
+			if (user==player){
+				message+="You";
+			}
+			else{
+				if (user.generic==true){
+					message+="The";
+				}
+				message+=" "+user.nameSing;
+			}
+			message+=" used Blade Crash on";
+			if (target==player){
+				message+=" you";
+			}
+			else{
+				if (target.generic==true){
+					message+=" the";
+				}
+				message+=" "+target.nameSing;
+			}
+			message+=" for "+(targetOldHealth-target.health)+" damage!";
+			return message;
+		});
+		betaSword=new weaponPhysical("Beta Sword",slash,stab,bash,[bladeCrash]);
+		betaArmor=new armor("Beta Armor",0,0,0);
 		player=new playerCharacter();
 		player.weaponEquipped=betaSword;
-		beta=new enemy("Beta","Betae",true,20,1,1,1);
+		beta=new enemy("Beta","Betae",true,8,1,1,1,betaArmor);
 		function playerCharacter(){
 			this.nameSing="";
 			this.generic=false;
 			this.maxHealth=100;
 			this.health=this.maxHealth;
-			this.attack=4;
-			this.defense=4;
-			this.magic=4;
+			this.attack=1;
+			this.defense=1;
+			this.magic=1;
 			this.weaponEquipped=0;
+			this.armorEquipped=0;
 		}
-		function enemy(nameSingParam, namePlParam, genericParam, maxHealthParam, attackParam, defenseParam, magicParam){
+		function enemy(nameSingParam, namePlParam, genericParam, maxHealthParam, attackParam, defenseParam, magicParam, armorEquippedParam){
 			this.nameSing=nameSingParam;
 			this.namePl=namePlParam;
 			this.generic=genericParam;
@@ -53,17 +134,44 @@
 			this.attac=attackParam;
 			this.defense=defenseParam;
 			this.magic=magicParam;
+			this.armorEquipped=armorEquippedParam;
 		}
-		function weaponPhysical(nameSingParam, primaryAttackParam, secondaryAttackParam, tertiaryAttackParam){
+		function weaponPhysical(nameSingParam, primaryAttackParam, secondaryAttackParam, tertiaryAttackParam, comboParam){
 			this.nameSing=nameSingParam;
 			this.primaryAttack=primaryAttackParam;
 			this.secondaryAttack=secondaryAttackParam;
 			this.tertiaryAttack=tertiaryAttackParam;
+			this.combo=comboParam;
+		}
+		function armor(nameSingParam, slashDefenseParam, punctureDefenseParam, impactDefenseParam){
+			this.nameSing=nameSingParam;
+			this.slashDefense=slashDefenseParam;
+			this.punctureDefense=punctureDefenseParam;
+			this.impact=impactDefenseParam;
 		}
 		function move(nameParam, executeParam, battleMessageParam){
 			this.name=nameParam;
 			this.execute=executeParam;
 			this.battleMessage=battleMessageParam;
+		}
+		function combo(nameParam, comboMoveParam, executeParam, battleMessageParam){
+			this.name=nameParam;
+			this.comboMove=comboMoveParam;
+			this.execute=executeParam;
+			this.battleMessage=battleMessageParam;
+		}
+		function getStandardDamageCurve(user, target, slash, puncture, impact){
+			var damage=Math.ceil(slash/4)+Math.ceil(puncture/4)+Math.ceil(impact/4);
+			if ((1/8)*(2*Math.pow((user.attack+slash)-(target.defense+target.armorEquipped.slashDefense),2)+Math.pow(-1,(user.attack+slash)-(target.defense+target.armorEquipped.slashDefense))+7)>0){
+				damage+=Math.ceil((1/8)*(2*Math.pow((user.attack+slash)-(target.defense+target.armorEquipped.slashDefense),2)+Math.pow(-1,(user.attack+slash)-(target.defense+target.armorEquipped.slashDefense))+7));
+			}
+			if ((1/8)*(2*Math.pow((user.attack+puncture)-(target.defense+target.armorEquipped.punctureDefense),2)+Math.pow(-1,(user.attack+puncture)-(target.defense+target.armorEquipped.punctureDefense))+7)>0){
+				damage+=Math.ceil((1/8)*(2*Math.pow((user.attack+puncture)-(target.defense+target.armorEquipped.punctureDefense),2)+Math.pow(-1,(user.attack+puncture)-(target.defense+target.armorEquipped.punctureDefense))+7));
+			}
+			if ((1/8)*(2*Math.pow((user.attack+impact)-(target.defense+target.armorEquipped.impactDefense),2)+Math.pow(-1,(user.attack+impact)-(target.defense+target.armorEquipped.impactDefense))+7)>0){
+				damage+=Math.ceil((1/8)*(2*Math.pow((user.attack+impact)-(target.defense+target.armorEquipped.impactDefense),2)+Math.pow(-1,(user.attack+impact)-(target.defense+target.armorEquipped.impactDefense))+7));
+			}
+			return damage;
 		}
 		function mainMenu(){
 			document.getElementById("mainText").innerHTML="<input type='button' value='New Game' onclick='newGame();'><br><br><input type='button' value='Load Game' onclick='loadGame();'>";
@@ -83,7 +191,9 @@
 		}
 		function battle(enemy){
 			enemy.health=enemy.maxHealth;
-			turnCount=0;
+			turnCount=1;
+			playerTurnLog=[];
+			enemyTurnLog=[];
 			battleDisplay(enemy,"");
 		}
 		function battleDisplay(enemy, battleText){
@@ -107,10 +217,28 @@
 			};
 		}
 		function battleTurn(player, enemy, playerMove){
+			var enemyMove=slash;
+			playerTurnLog[turnCount]=playerMove;
+			enemyTurnLog[turnCount]=enemyMove;
+			var i=0;
+			var j=0;
+			for (i=0;i<player.weaponEquipped.combo.length;i++){
+				if (turnCount>=player.weaponEquipped.combo[i].comboMove.length){
+					var isCombo=true;
+					for (j=0;j<player.weaponEquipped.combo[i].comboMove.length;j++){
+						if (!(player.weaponEquipped.combo[i].comboMove[j]==playerTurnLog[turnCount-player.weaponEquipped.combo[i].comboMove.length+j+1])){
+							isCombo=false;
+						}
+					}
+					if (isCombo==true){
+						playerMove=player.weaponEquipped.combo[i];
+						playerTurnLog[turnCount]=playerMove;
+					}
+				}
+			}
 			var oldPlayerHealth=player.health;
 			var oldEnemyHealth=enemy.health;
 			playerMove.execute(player,enemy);
-			var enemyMove=slash;
 			enemyMove.execute(enemy,player);
 			if (player.health<=0){
 				alert("You lost...");
@@ -118,6 +246,7 @@
 			if (enemy.health<=0){
 				alert("You win!");
 			}
+			turnCount++;
 			battleDisplay(enemy,playerMove.battleMessage(player,enemy,oldPlayerHealth,oldEnemyHealth)+"<br>"+enemyMove.battleMessage(enemy,player,oldEnemyHealth,oldPlayerHealth));
 		}
 	</script>
