@@ -114,6 +114,7 @@
 		player=new playerCharacter();
 		player.weaponEquipped=betaSword;
 		beta=new enemy("Beta","Betae",true,8,1,1,1,betaArmor);
+		increment=1;
 		function playerCharacter(){
 			this.nameSing="";
 			this.generic=false;
@@ -174,17 +175,15 @@
 			return damage;
 		}
 		function mainMenu(){
-			document.getElementById("mainText").innerHTML="<input type='button' value='New Game' onclick='newGame();'><br><br><input type='button' value='Load Game' onclick='loadGame();'>";
-		}
-		function newGame(){
-			setName();
+			document.getElementById("mainText").innerHTML="<input type='button' value='New Game' onclick='setName();'><br><br><input type='button' value='Load Game' onclick='loadGame();'>";
 		}
 		function setName(){
 			document.getElementById("mainText").innerHTML="What is your name?<br><input id='nameInput' type='text' autofocus><input type='button' value='Submit' onclick='difficulty();'>";
 		}
 		function difficulty(){
 			player.nameSing=document.getElementById("nameInput").value;
-			if (player.nameSing==""){
+			seed=parseInt(player.nameSing,36)
+			if (player.nameSing=="" || isNaN(seed)){
 				return;
 			}
 			document.getElementById("mainText").innerHTML="What difficulty do you want to play on?<br>(This cannot be changed once set.)<br><br><input type='button' value='Normal' onclick='battle(beta)'>";
@@ -248,6 +247,33 @@
 			}
 			turnCount++;
 			battleDisplay(enemy,playerMove.battleMessage(player,enemy,oldPlayerHealth,oldEnemyHealth)+"<br>"+enemyMove.battleMessage(enemy,player,oldEnemyHealth,oldPlayerHealth));
+		}
+		function incrementSeed(skip){
+			while (skip>=0){
+				increment++;
+				var i=increment-1;
+				while (i!=1){
+					if (checkDivisibility(increment,i)){
+						increment++;
+						i=increment;
+					}
+					i--;
+				}
+				skip--;
+			}
+			return increment;
+		}
+		function checkDivisibility(first, second){
+			var greatest=first;
+			var least=second;
+			if (second>first){
+				greatest=second;
+				least=first;
+			}
+			if (Math.floor(greatest/least)==greatest/least){
+				return true;
+			}
+			return false;
 		}
 	</script>
 </html>
