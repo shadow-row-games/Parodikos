@@ -6,22 +6,6 @@
 	<pre id="extraTextA" disabled></pre>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 	<script>
-		var poison=new statusEffect("Poison",3,function(user,target){
-			target.health-=target.maxHealth/32;
-		},function(user, target, userOldHealth, targetOldHealth){
-			var message="";
-			if (target==player){
-				message+="You";
-			}
-			else{
-				if (target.generic==true){
-					message+="The ";
-				}
-				message+=target.nameSing;
-			}
-			message+=" took "+(target.oldHealth-target.newHealth)+" damage from the poison.";
-			return message;
-		});
 		var slash=new move("Slash",function(user, target){
 			target.health-=getStandardDamageCurve(user,target,1,0,0);
 		},function(user, target, userOldHealth, targetOldHealth){
@@ -103,7 +87,22 @@
 		var poisonSlash=new move("Poison Slash",function(user, target){
 			target.health-=getStandardDamageCurve(user,target,0,0,1);
 			if (seed%4==0){
-			
+				target.statusEffect.push(poison=new statusEffect("Poison",3,function(user,target){
+					target.health-=target.maxHealth/32;
+				},function(user, target, userOldHealth, targetOldHealth){
+				var message="";
+				if (target==player){
+					message+="You";
+				}
+				else{
+					if (target.generic==true){
+						message+="The ";
+					}
+					message+=target.nameSing;
+				}
+				message+=" took "+(target.oldHealth-target.newHealth)+" damage from the poison.";
+				return message;
+				});
 			}
 		}
 		var bladeCrash=new combo("Blade Crash",[slash,slash,stab],function(user, target){
