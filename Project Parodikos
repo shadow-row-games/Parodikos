@@ -4,7 +4,6 @@
 	<title>Project Parodikos</title>
 	<pre id="mainText">Yo. Click <input type="button" value="here" onclick="mainMenu();"> to begin.</pre>
 	<pre id="extraTextA" disabled></pre>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 	<script>
 		var slash=new move("Slash",function(user, target){
 			target.health-=getStandardDamageCurve(user,target,1,0,0);
@@ -102,9 +101,9 @@
 				}
 				message+=" took "+(target.oldHealth-target.newHealth)+" damage from the poison.";
 				return message;
-				});
+				}));
 			}
-		}
+		});
 		var bladeCrash=new combo("Blade Crash",[slash,slash,stab],function(user, target){
 			target.health-=getStandardDamageCurve(user,target,3,0,0);
 		},function(user, target, userOldHealth, targetOldHealth){
@@ -131,11 +130,11 @@
 			message+=" for "+(targetOldHealth-target.health)+" damage!";
 			return message;
 		});
-		betaSword=new weaponPhysical("Beta Sword",slash,stab,bash,[bladeCrash]);
-		betaArmor=new armor("Beta Armor",0,0,0);
-		player=new playerCharacter();
+		var betaSword=new weaponPhysical("Beta Sword",slash,stab,bash,[bladeCrash]);
+		var betaArmor=new armor("Beta Armor",0,0,0);
+		var player=new playerCharacter();
 		player.weaponEquipped=betaSword;
-		beta=new enemy("Beta","Betae",true,8,1,1,1,betaArmor,function(enemyTurnLog){
+		var beta=new enemy("Beta","Betae",true,8,1,1,1,betaArmor,function(enemyTurnLog){
 			return slash;
 		});
 		increment=1;
@@ -272,6 +271,9 @@
 			var oldPlayerHealth=player.health;
 			var oldEnemyHealth=enemy.health;
 			playerMove.execute(player,enemy);
+			for (i=0;i<player.statusEffect.length;i++){
+				player.statusEffect[i].execute(
+			}
 			enemyMove.execute(enemy,player);
 			if (player.health<=0){
 				alert("You lost...");
