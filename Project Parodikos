@@ -4,7 +4,24 @@
 	<title>Project Parodikos</title>
 	<pre id="mainText">Yo. Click <input type="button" value="here" onclick="mainMenu();"> to begin.</pre>
 	<pre id="extraTextA" disabled></pre>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 	<script>
+		var poison=new statusEffect("Poison",3,function(user,target){
+			target.health-=target.maxHealth/32;
+		},function(user, target, userOldHealth, targetOldHealth){
+			var message="";
+			if (target==player){
+				message+="You";
+			}
+			else{
+				if (target.generic==true){
+					message+="The ";
+				}
+				message+=target.nameSing;
+			}
+			message+=" took "+(target.oldHealth-target.newHealth)+" damage from the poison.";
+			return message;
+		});
 		var slash=new move("Slash",function(user, target){
 			target.health-=getStandardDamageCurve(user,target,1,0,0);
 		},function(user, target, userOldHealth, targetOldHealth){
@@ -14,9 +31,9 @@
 			}
 			else{
 				if (user.generic==true){
-					message+="The";
+					message+="The ";
 				}
-				message+=" "+user.nameSing;
+				message+=user.nameSing;
 			}
 			message+=" slashed";
 			if (target==player){
@@ -83,6 +100,12 @@
 			message+=" for "+(targetOldHealth-target.health)+" damage!";
 			return message;
 		});
+		var poisonSlash=new move("Poison Slash",function(user, target){
+			target.health-=getStandardDamageCurve(user,target,0,0,1);
+			if (seed%4==0){
+			
+			}
+		}
 		var bladeCrash=new combo("Blade Crash",[slash,slash,stab],function(user, target){
 			target.health-=getStandardDamageCurve(user,target,3,0,0);
 		},function(user, target, userOldHealth, targetOldHealth){
@@ -113,7 +136,9 @@
 		betaArmor=new armor("Beta Armor",0,0,0);
 		player=new playerCharacter();
 		player.weaponEquipped=betaSword;
-		beta=new enemy("Beta","Betae",true,8,1,1,1,betaArmor);
+		beta=new enemy("Beta","Betae",true,8,1,1,1,betaArmor,function(enemyTurnLog){
+			return slash;
+		});
 		increment=1;
 		function playerCharacter(){
 			this.nameSing="";
@@ -125,8 +150,9 @@
 			this.magic=1;
 			this.weaponEquipped=0;
 			this.armorEquipped=0;
+			this.statusEffect=[];
 		}
-		function enemy(nameSingParam, namePlParam, genericParam, maxHealthParam, attackParam, defenseParam, magicParam, armorEquippedParam){
+		function enemy(nameSingParam, namePlParam, genericParam, maxHealthParam, attackParam, defenseParam, magicParam, armorEquippedParam, AIParam){
 			this.nameSing=nameSingParam;
 			this.namePl=namePlParam;
 			this.generic=genericParam;
@@ -136,6 +162,8 @@
 			this.defense=defenseParam;
 			this.magic=magicParam;
 			this.armorEquipped=armorEquippedParam;
+			this.statusEffect=[];
+			this.AI=AIParam;
 		}
 		function weaponPhysical(nameSingParam, primaryAttackParam, secondaryAttackParam, tertiaryAttackParam, comboParam){
 			this.nameSing=nameSingParam;
@@ -158,6 +186,13 @@
 		function combo(nameParam, comboMoveParam, executeParam, battleMessageParam){
 			this.name=nameParam;
 			this.comboMove=comboMoveParam;
+			this.execute=executeParam;
+			this.battleMessage=battleMessageParam;
+		}
+		function statusEffect(nameParam, durationParam, executeParam, battleMessageParam){
+			this.name=nameParam;
+			this.duration=durationParam;
+			this.movesRemaining=this.duration;
 			this.execute=executeParam;
 			this.battleMessage=battleMessageParam;
 		}
