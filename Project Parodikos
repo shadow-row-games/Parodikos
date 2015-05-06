@@ -85,24 +85,65 @@
 		});
 		var poisonSlash=new move("Poison Slash",function(user, target){
 			target.health-=getStandardDamageCurve(user,target,0,0,1);
+			var i=0;
+			var isPoisoned=false;
+			for (i=0;i<target.statusEffect.length;i++){
+				if (target.statusEffect[i].name=="Poison"){
+					isPoisoned==true;
+				}
+			}
+			if (isPoisoned==false && seed%4==0){
+				target.statusEffect.push(poison=new statusEffect("Poison",3,function(){
+					target.health-=Math.ceil(target.maxHealth/32);
+				},function(target,targetOldHealth){
+					var message="";
+					if (target==player){
+						message+="You";
+					}
+					else{
+						if (target.generic==true){
+							message+="The";
+						}
+						message+=" "+target.nameSing;
+					}
+					message+=" took "+(targetOldHealth-target.health)+" damage from the poison!";
+					return message;
+				}));
+			}
+		},function(user, target, userOldHealth, targetOldHealth){
+			var message="";
+			if (user==player){
+				message+="You";
+			}
+			else{
+				if (user.generic==true){
+					message+="The";
+				}
+				message+=" "+user.nameSing;
+			}
+			message+=" used Poison Slash on";
+			if (target==player){
+				message+=" you";
+			}
+			else{
+				if (target.generic==true){
+					message+=" the";
+				}
+				message+=" "+target.nameSing;
+			}
+			message+=" for "+(targetOldHealth-target.health)+" damage!";
 			if (seed%4==0){
-				target.statusEffect.push(poison=new statusEffect("Poison",3,function(user,target){
-					target.health-=target.maxHealth/32;
-				},function(user, target, userOldHealth, targetOldHealth){
-				var message="";
 				if (target==player){
-					message+="You";
+					message+="<br>You were poisoned!";
 				}
 				else{
 					if (target.generic==true){
-						message+="The ";
+						message+="<br>The ";
 					}
-					message+=target.nameSing;
+					message+=target.nameSing+" was poisoned!";
 				}
-				message+=" took "+(target.oldHealth-target.newHealth)+" damage from the poison.";
-				return message;
-				}));
 			}
+			return message;
 		});
 		var bladeCrash=new combo("Blade Crash",[slash,slash,stab],function(user, target){
 			target.health-=getStandardDamageCurve(user,target,3,0,0);
@@ -134,8 +175,13 @@
 		var betaArmor=new armor("Beta Armor",0,0,0);
 		var player=new playerCharacter();
 		player.weaponEquipped=betaSword;
-		var beta=new enemy("Beta","Betae",true,8,1,1,1,betaArmor,function(enemyTurnLog){
-			return slash;
+		var beta=new enemy("Beta","Betae",true,8,1,1,1,betaArmor,function(){
+			if (seed%5<=1){
+				return poisonSlash;
+			}
+			else{
+				return slash;
+			}
 		});
 		increment=1;
 		function playerCharacter(){
@@ -187,10 +233,10 @@
 			this.execute=executeParam;
 			this.battleMessage=battleMessageParam;
 		}
-		function statusEffect(nameParam, durationParam, executeParam, battleMessageParam){
+		function statusEffect(nameParam, durationTotalParam, executeParam, battleMessageParam){
 			this.name=nameParam;
-			this.duration=durationParam;
-			this.movesRemaining=this.duration;
+			this.durationTotal=durationTotalParam;
+			this.durationRemaining=this.durationTotal;
 			this.execute=executeParam;
 			this.battleMessage=battleMessageParam;
 		}
@@ -236,9 +282,9 @@
 				if (isAttackMenuExpanded==false){
 					document.getElementById("extraTextA").innerHTML+="<br>|--<input id='primaryAttackInput' type='button' value="+player.weaponEquipped.primaryAttack.name+"><br>|--<input id='secondaryAttackInput' type='button' value="+player.weaponEquipped.secondaryAttack.name+"><br>|--<input id='tertiaryAttackInput' type='button' value="+player.weaponEquipped.tertiaryAttack.name+">";
 					document.getElementById("attackInput").onclick=function(){expandAttackMenu();};
-					document.getElementById("primaryAttackInput").onclick=function(){battleTurn(player,enemy,player.weaponEquipped.primaryAttack);};
-					document.getElementById("secondaryAttackInput").onclick=function(){battleTurn(player,enemy,player.weaponEquipped.secondaryAttack);};
-					document.getElementById("tertiaryAttackInput").onclick=function(){battleTurn(player,enemy,player.weaponEquipped.tertiaryAttack);};
+					document.getElementById("primaryAttackInput").onclick=function(){battleTurn(player,enemy,player.weaponEquipped.primaryAttack,0);};
+					document.getElementById("secondaryAttackInput").onclick=function(){battleTurn(player,enemy,player.weaponEquipped.secondaryAttack,1);};
+					document.getElementById("tertiaryAttackInput").onclick=function(){battleTurn(player,enemy,player.weaponEquipped.tertiaryAttack,2);};
 					isAttackMenuExpanded=true;
 				}
 				else{
@@ -248,8 +294,8 @@
 				}
 			};
 		}
-		function battleTurn(player, enemy, playerMove){
-			var enemyMove=slash;
+		function battleTurn(player, enemy, playerMove, seedIncrement){
+			var enemyMove=enemy.AI();
 			playerTurnLog[turnCount]=playerMove;
 			enemyTurnLog[turnCount]=enemyMove;
 			var i=0;
@@ -268,21 +314,47 @@
 					}
 				}
 			}
-			var oldPlayerHealth=player.health;
-			var oldEnemyHealth=enemy.health;
+			var message="";
+			var playerOldHealth=player.health;
+			var enemyOldHealth=enemy.health;
 			playerMove.execute(player,enemy);
+			message+=playerMove.battleMessage(player,enemy,playerOldHealth,enemyOldHealth);
+			seed+=incrementSeed(seedIncrement);
+			playerOldHealth=player.health;
+			enemyOldHealth=enemy.health;
 			for (i=0;i<player.statusEffect.length;i++){
-				player.statusEffect[i].execute(
+				player.statusEffect[i].execute();
+				message+="<br>"+player.statusEffect[i].battleMessage(player,playerOldHealth);
+				seed+=incrementSeed(seedIncrement);
+				playerOldHealth=player.health;
+				player.statusEffect[i].durationRemaining--;
+				if (player.statusEffect[i].durationRemaining<=0){
+					player.statusEffect.splice(i,1);
+				}
 			}
 			enemyMove.execute(enemy,player);
+			message+="<br>"+enemyMove.battleMessage(enemy,player,enemyOldHealth,playerOldHealth);
+			seed+=incrementSeed(seedIncrement);
+			enemyOldHealth=enemy.health;
+			playerOldHealth=player.health;
+			for (i=0;i<enemy.statusEffect.length;i++){
+				enemy.statusEffect[i].execute();
+				message+="<br>"+enemy.statusEffect[i].battleMessage(enemy,enemyOldHealth);
+				seed+=incrementSeed(seedIncrement);
+				enemyOldHealth=enemy.health;
+				enemy.statusEffect[i].durationRemaining--;
+				if (enemy.statusEffect[i].durationRemaining<=0){
+					enemy.statusEffect.splice(i,1);
+				}
+			}
 			if (player.health<=0){
-				alert("You lost...");
+				//alert("You lost...");
 			}
 			if (enemy.health<=0){
-				alert("You win!");
+				//alert("You win!");
 			}
 			turnCount++;
-			battleDisplay(enemy,playerMove.battleMessage(player,enemy,oldPlayerHealth,oldEnemyHealth)+"<br>"+enemyMove.battleMessage(enemy,player,oldEnemyHealth,oldPlayerHealth));
+			battleDisplay(enemy,message);
 		}
 		function incrementSeed(skip){
 			while (skip>=0){
