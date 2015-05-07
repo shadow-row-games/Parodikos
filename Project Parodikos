@@ -4,10 +4,11 @@
 	<title>Project Parodikos</title>
 	<pre id="mainText">Yo. Click <input type="button" value="here" onclick="mainMenu();"> to begin.</pre>
 	<pre id="extraTextA" disabled></pre>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 	<script>
 		var slash=new move("Slash",function(user, target){
+			var targetOldHealth=target.health;
 			target.health-=getStandardDamageCurve(user,target,1,0,0);
-		},function(user, target, userOldHealth, targetOldHealth){
 			var message="";
 			if (user==player){
 				message+="You";
@@ -32,8 +33,8 @@
 			return message;
 		});
 		var stab=new move("Stab",function(user, target){
+			var targetOldHealth=target.health;
 			target.health-=getStandardDamageCurve(user,target,1,0,0);
-		},function(user, target, userOldHealth, targetOldHealth){
 			var message="";
 			if (user==player){
 				message+="You";
@@ -58,8 +59,8 @@
 			return message;
 		});
 		var bash=new move("Bash",function(user, target){
+			var targetOldHealth=target.health;
 			target.health-=getStandardDamageCurve(user,target,0,0,1);
-		},function(user, target, userOldHealth, targetOldHealth){
 			var message="";
 			if (user==player){
 				message+="You";
@@ -84,33 +85,8 @@
 			return message;
 		});
 		var poisonSlash=new move("Poison Slash",function(user, target){
+			var targetOldHealth=target.health;
 			target.health-=getStandardDamageCurve(user,target,0,0,1);
-			var i=0;
-			var isPoisoned=false;
-			for (i=0;i<target.statusEffect.length;i++){
-				if (target.statusEffect[i].name=="Poison"){
-					isPoisoned==true;
-				}
-			}
-			if (isPoisoned==false && seed%4==0){
-				target.statusEffect.push(poison=new statusEffect("Poison",3,function(){
-					target.health-=Math.ceil(target.maxHealth/32);
-				},function(target,targetOldHealth){
-					var message="";
-					if (target==player){
-						message+="You";
-					}
-					else{
-						if (target.generic==true){
-							message+="The";
-						}
-						message+=" "+target.nameSing;
-					}
-					message+=" took "+(targetOldHealth-target.health)+" damage from the poison!";
-					return message;
-				}));
-			}
-		},function(user, target, userOldHealth, targetOldHealth){
 			var message="";
 			if (user==player){
 				message+="You";
@@ -132,7 +108,30 @@
 				message+=" "+target.nameSing;
 			}
 			message+=" for "+(targetOldHealth-target.health)+" damage!";
-			if (seed%4==0){
+			var i=0;
+			var isPoisoned=false;
+			for (i=0;i<target.statusEffect.length;i++){
+				if (target.statusEffect[i]==poison){
+					isPoisoned=true;
+				}
+			}
+			if (isPoisoned==false && seed%4==0){
+				target.statusEffect.push(poison=new statusEffect("Poison",3,function(){
+					var targetOldHealth=target.health;
+					target.health-=Math.ceil(target.maxHealth/32);
+					var message="";
+					if (target==player){
+						message+="You";
+					}
+					else{
+						if (target.generic==true){
+							message+="The";
+						}
+						message+=" "+target.nameSing;
+					}
+					message+=" took "+(targetOldHealth-target.health)+" damage from the poison!";
+					return message;
+				}));
 				if (target==player){
 					message+="<br>You were poisoned!";
 				}
@@ -146,8 +145,8 @@
 			return message;
 		});
 		var bladeCrash=new combo("Blade Crash",[slash,slash,stab],function(user, target){
+			var targetOldHealth=target.health;
 			target.health-=getStandardDamageCurve(user,target,3,0,0);
-		},function(user, target, userOldHealth, targetOldHealth){
 			var message="";
 			if (user==player){
 				message+="You";
@@ -225,20 +224,17 @@
 		function move(nameParam, executeParam, battleMessageParam){
 			this.name=nameParam;
 			this.execute=executeParam;
-			this.battleMessage=battleMessageParam;
 		}
 		function combo(nameParam, comboMoveParam, executeParam, battleMessageParam){
 			this.name=nameParam;
 			this.comboMove=comboMoveParam;
 			this.execute=executeParam;
-			this.battleMessage=battleMessageParam;
 		}
 		function statusEffect(nameParam, durationTotalParam, executeParam, battleMessageParam){
 			this.name=nameParam;
 			this.durationTotal=durationTotalParam;
 			this.durationRemaining=this.durationTotal;
 			this.execute=executeParam;
-			this.battleMessage=battleMessageParam;
 		}
 		function getStandardDamageCurve(user, target, slash, puncture, impact){
 			var damage=Math.ceil(slash/4)+Math.ceil(puncture/4)+Math.ceil(impact/4);
@@ -282,9 +278,9 @@
 				if (isAttackMenuExpanded==false){
 					document.getElementById("extraTextA").innerHTML+="<br>|--<input id='primaryAttackInput' type='button' value="+player.weaponEquipped.primaryAttack.name+"><br>|--<input id='secondaryAttackInput' type='button' value="+player.weaponEquipped.secondaryAttack.name+"><br>|--<input id='tertiaryAttackInput' type='button' value="+player.weaponEquipped.tertiaryAttack.name+">";
 					document.getElementById("attackInput").onclick=function(){expandAttackMenu();};
-					document.getElementById("primaryAttackInput").onclick=function(){battleTurn(player,enemy,player.weaponEquipped.primaryAttack,0);};
-					document.getElementById("secondaryAttackInput").onclick=function(){battleTurn(player,enemy,player.weaponEquipped.secondaryAttack,1);};
-					document.getElementById("tertiaryAttackInput").onclick=function(){battleTurn(player,enemy,player.weaponEquipped.tertiaryAttack,2);};
+					document.getElementById("primaryAttackInput").onclick=function(){seed+=incrementSeed(0);battleTurn(player,enemy,player.weaponEquipped.primaryAttack,0);};
+					document.getElementById("secondaryAttackInput").onclick=function(){seed+=incrementSeed(1);battleTurn(player,enemy,player.weaponEquipped.secondaryAttack,1);};
+					document.getElementById("tertiaryAttackInput").onclick=function(){seed+=incrementSeed(2);battleTurn(player,enemy,player.weaponEquipped.tertiaryAttack,2);};
 					isAttackMenuExpanded=true;
 				}
 				else{
@@ -294,7 +290,7 @@
 				}
 			};
 		}
-		function battleTurn(player, enemy, playerMove, seedIncrement){
+		function battleTurn(player, enemy, playerMove){
 			var enemyMove=enemy.AI();
 			playerTurnLog[turnCount]=playerMove;
 			enemyTurnLog[turnCount]=enemyMove;
@@ -315,43 +311,27 @@
 				}
 			}
 			var message="";
-			var playerOldHealth=player.health;
-			var enemyOldHealth=enemy.health;
-			playerMove.execute(player,enemy);
-			message+=playerMove.battleMessage(player,enemy,playerOldHealth,enemyOldHealth);
-			seed+=incrementSeed(seedIncrement);
-			playerOldHealth=player.health;
-			enemyOldHealth=enemy.health;
+			message+=playerMove.execute(player,enemy);
 			for (i=0;i<player.statusEffect.length;i++){
-				player.statusEffect[i].execute();
-				message+="<br>"+player.statusEffect[i].battleMessage(player,playerOldHealth);
-				seed+=incrementSeed(seedIncrement);
-				playerOldHealth=player.health;
+				message+="<br>"+player.statusEffect[i].execute();
 				player.statusEffect[i].durationRemaining--;
 				if (player.statusEffect[i].durationRemaining<=0){
 					player.statusEffect.splice(i,1);
 				}
 			}
-			enemyMove.execute(enemy,player);
-			message+="<br>"+enemyMove.battleMessage(enemy,player,enemyOldHealth,playerOldHealth);
-			seed+=incrementSeed(seedIncrement);
-			enemyOldHealth=enemy.health;
-			playerOldHealth=player.health;
+			message+="<br>"+enemyMove.execute(enemy,player);
 			for (i=0;i<enemy.statusEffect.length;i++){
-				enemy.statusEffect[i].execute();
-				message+="<br>"+enemy.statusEffect[i].battleMessage(enemy,enemyOldHealth);
-				seed+=incrementSeed(seedIncrement);
-				enemyOldHealth=enemy.health;
+				message+="<br>"+enemy.statusEffect[i].execute();
 				enemy.statusEffect[i].durationRemaining--;
 				if (enemy.statusEffect[i].durationRemaining<=0){
 					enemy.statusEffect.splice(i,1);
 				}
 			}
 			if (player.health<=0){
-				//alert("You lost...");
+				alert("You lost...");
 			}
 			if (enemy.health<=0){
-				//alert("You win!");
+				alert("You win!");
 			}
 			turnCount++;
 			battleDisplay(enemy,message);
