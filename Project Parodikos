@@ -250,18 +250,18 @@
 			return damage;
 		}
 		function mainMenu(){
-			document.getElementById("mainText").innerHTML="<input type='button' value='New Game' onclick='setName();'><br><br><input type='button' value='Load Game' onclick='loadGame();'>";
+			$("#mainText").html("<input type='button' value='New Game' onclick='setName();'><br><br><input type='button' value='Load Game' onclick='loadGame();'>");
 		}
 		function setName(){
-			document.getElementById("mainText").innerHTML="What is your name?<br><input id='nameInput' type='text' autofocus><input type='button' value='Submit' onclick='difficulty();'>";
+			$("#mainText").html("What is your name?<br><input id='nameInput' type='text' autofocus><input type='button' value='Submit' onclick='difficulty();'>");
 		}
 		function difficulty(){
-			player.nameSing=document.getElementById("nameInput").value;
+			player.nameSing=$("#nameInput").val();
 			seed=parseInt(player.nameSing,36)
 			if (player.nameSing=="" || isNaN(seed)){
 				return;
 			}
-			document.getElementById("mainText").innerHTML="What difficulty do you want to play on?<br>(This cannot be changed once set.)<br><br><input type='button' value='Normal' onclick='battle(beta)'>";
+			$("#mainText").html("What difficulty do you want to play on?<br>(This cannot be changed once set.)<br><br><input type='button' value='Normal' onclick='battle(beta)'>");
 		}
 		function battle(enemy){
 			enemy.health=enemy.maxHealth;
@@ -272,23 +272,22 @@
 		}
 		function battleDisplay(enemy, battleText){
 			var isAttackMenuExpanded=false;
-			document.getElementById("mainText").innerHTML=enemy.nameSing+" HP: "+enemy.health+"<br><br><br>"+player.nameSing+" HP: "+player.health+"<br><br>"+battleText;
-			document.getElementById("extraTextA").innerHTML="<input id='attackInput' type='button' value='Attack'>";
-			document.getElementById("attackInput").onclick=function expandAttackMenu(){
+			$("#mainText").html(enemy.nameSing+" HP: "+enemy.health+"<br><br><br>"+player.nameSing+" HP: "+player.health+"<br><br>"+battleText);
+			$("#extraTextA").html("<input id='attackInput' type='button' value='Attack'>");
+			$("#attackInput").click(function expandAttackMenu(){
 				if (isAttackMenuExpanded==false){
-					document.getElementById("extraTextA").innerHTML+="<br>|--<input id='primaryAttackInput' type='button' value="+player.weaponEquipped.primaryAttack.name+"><br>|--<input id='secondaryAttackInput' type='button' value="+player.weaponEquipped.secondaryAttack.name+"><br>|--<input id='tertiaryAttackInput' type='button' value="+player.weaponEquipped.tertiaryAttack.name+">";
-					document.getElementById("attackInput").onclick=function(){expandAttackMenu();};
-					document.getElementById("primaryAttackInput").onclick=function(){seed+=incrementSeed(0);battleTurn(player,enemy,player.weaponEquipped.primaryAttack,0);};
-					document.getElementById("secondaryAttackInput").onclick=function(){seed+=incrementSeed(1);battleTurn(player,enemy,player.weaponEquipped.secondaryAttack,1);};
-					document.getElementById("tertiaryAttackInput").onclick=function(){seed+=incrementSeed(2);battleTurn(player,enemy,player.weaponEquipped.tertiaryAttack,2);};
+					$("#extraTextA").append("<br>|--<input id='primaryAttackInput' type='button' value="+player.weaponEquipped.primaryAttack.name+"><br>|--<input id='secondaryAttackInput' type='button' value="+player.weaponEquipped.secondaryAttack.name+"><br>|--<input id='tertiaryAttackInput' type='button' value="+player.weaponEquipped.tertiaryAttack.name+">");
+					$("#primaryAttackInput").click(function(){seed+=incrementSeed(0);battleTurn(player,enemy,player.weaponEquipped.primaryAttack,0);});
+					$("#secondaryAttackInput").click(function(){seed+=incrementSeed(1);battleTurn(player,enemy,player.weaponEquipped.secondaryAttack,1);});
+					$("#tertiaryAttackInput").click(function(){seed+=incrementSeed(2);battleTurn(player,enemy,player.weaponEquipped.tertiaryAttack,2);});
 					isAttackMenuExpanded=true;
 				}
 				else{
-					document.getElementById("extraTextA").innerHTML="<input id='attackInput' type='button' value='Attack'>";
-					document.getElementById("attackInput").onclick=function(){expandAttackMenu();};
+					$("#extraTextA").html("<input id='attackInput' type='button' value='Attack'>");
+					$("#attackInput").click(function(){expandAttackMenu();});
 					isAttackMenuExpanded=false;
 				}
-			};
+			});
 		}
 		function battleTurn(player, enemy, playerMove){
 			var enemyMove=enemy.AI();
