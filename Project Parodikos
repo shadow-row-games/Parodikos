@@ -272,7 +272,26 @@
 		}
 		function battleDisplay(enemy, battleText){
 			var isAttackMenuExpanded=false;
-			$("#mainText").html(enemy.nameSing+" HP: "+enemy.health+"<br><br><br>"+player.nameSing+" HP: "+player.health+"<br><br>"+battleText);
+			$("#mainText").html("");
+			$("#mainText").append("/----------------\\<br>|");
+			var i=0;
+			for (i=0;i<8-Math.ceil(enemy.nameSing.length/2);i++){
+				$("#mainText").append(" ");
+			}
+			$("#mainText").append(enemy.nameSing);
+			for (i=0;i<8-Math.floor(enemy.nameSing.length/2);i++){
+				$("#mainText").append(" ");
+			}
+			$("#mainText").append("|<br>| <b>HP</b>[");
+			for (i=0;i<10;i++){
+				if (Math.ceil(10*enemy.health/enemy.maxHealth)>i){
+					$("#mainText").append("/");
+				}
+				else{
+					$("#mainText").append(" ");
+				}
+			}
+			$("#mainText").append("] |<br>\\----------------/<br><br>"+player.nameSing+" <b>HP</b> "+player.health);
 			$("#extraTextA").html("<input id='attackInput' type='button' value='Attack'>");
 			$("#attackInput").click(function expandAttackMenu(){
 				if (isAttackMenuExpanded==false){
