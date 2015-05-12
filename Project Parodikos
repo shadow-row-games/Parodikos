@@ -221,16 +221,16 @@
 			this.punctureDefense=punctureDefenseParam;
 			this.impact=impactDefenseParam;
 		}
-		function move(nameParam, executeParam, battleMessageParam){
+		function move(nameParam, executeParam){
 			this.name=nameParam;
 			this.execute=executeParam;
 		}
-		function combo(nameParam, comboMoveParam, executeParam, battleMessageParam){
+		function combo(nameParam, comboMoveParam, executeParam){
 			this.name=nameParam;
 			this.comboMove=comboMoveParam;
 			this.execute=executeParam;
 		}
-		function statusEffect(nameParam, durationTotalParam, executeParam, battleMessageParam){
+		function statusEffect(nameParam, durationTotalParam, executeParam){
 			this.name=nameParam;
 			this.durationTotal=durationTotalParam;
 			this.durationRemaining=this.durationTotal;
@@ -291,7 +291,7 @@
 					$("#mainText").append(" ");
 				}
 			}
-			$("#mainText").append("] |<br>\\----------------/<br><br>"+player.nameSing+" <b>HP</b> "+player.health);
+			$("#mainText").append("] |<br>\\----------------/<br><br>"+player.nameSing+" <b>HP</b> "+player.health+"<br><br>"+battleText);
 			$("#extraTextA").html("<input id='attackInput' type='button' value='Attack'>");
 			$("#attackInput").click(function expandAttackMenu(){
 				if (isAttackMenuExpanded==false){
