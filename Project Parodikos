@@ -291,7 +291,11 @@
 					$("#mainText").append(" ");
 				}
 			}
-			$("#mainText").append("] |<br>\\----------------/<br><br>"+player.nameSing+" <b>HP</b> "+player.health+"<br><br>"+battleText);
+			$("#mainText").append("] |<br>|    \\<b>"+enemy.health+"/"+enemy.maxHealth+"</b>/");
+			for (i=9;i>enemy.health.toString().length+enemy.maxHealth.toString().length;i--){
+				$("#mainText").append(" ");
+			}
+			$("#mainText").append("|<br>\\----------------/<br><br>"+player.nameSing+" <b>HP</b> "+player.health+"<br><br>"+battleText);
 			$("#extraTextA").html("<input id='attackInput' type='button' value='Attack'>");
 			$("#attackInput").click(function expandAttackMenu(){
 				if (isAttackMenuExpanded==false){
