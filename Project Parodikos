@@ -2,12 +2,8 @@
 <html>
 	<meta charset="UTF-8">
 	<title>Project Parodikos</title>
+	<link rel="stylesheet" type="text/css" href="styles\parodikos-styles.css">
 	<pre id="mainText">Yo. Click <input type="button" value="here" onclick="mainMenu();"> to begin.</pre>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 	<script src="scripts\parodikos.js"></script>
-	<style>
-	div.left{
-		float:left;
-	}
-	</style>
 </html>
