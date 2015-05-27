@@ -6,8 +6,8 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 	<script>
 		var slash=new move("Slash",function(user, target){
-			var targetOldHealth=target.health;
-			target.health-=getStandardDamageCurve(user,target,1,0,0);
+			var targetOldHealth=target[0].health;
+			target[0].health-=getStandardDamageCurve(user,target[0],1,0,0);
 			var message="";
 			if (user==player){
 				message+="You";
@@ -19,21 +19,21 @@
 				message+=user.nameSing;
 			}
 			message+=" slashed";
-			if (target==player){
+			if (target[0]==player){
 				message+=" you";
 			}
 			else{
-				if (target.generic==true){
+				if (target[0].generic==true){
 					message+=" the";
 				}
-				message+=" "+target.nameSing;
+				message+=" "+target[0].nameSing;
 			}
-			message+=" for "+(targetOldHealth-target.health)+" damage!";
+			message+=" for "+(targetOldHealth-target[0].health)+" damage!";
 			return message;
 		});
 		var stab=new move("Stab",function(user, target){
-			var targetOldHealth=target.health;
-			target.health-=getStandardDamageCurve(user,target,1,0,0);
+			var targetOldHealth=target[0].health;
+			target[0].health-=getStandardDamageCurve(user,target[0],1,0,0);
 			var message="";
 			if (user==player){
 				message+="You";
@@ -45,21 +45,21 @@
 				message+=" "+user.nameSing;
 			}
 			message+=" stabbed";
-			if (target==player){
+			if (target[0]==player){
 				message+=" you";
 			}
 			else{
-				if (target.generic==true){
+				if (target[0].generic==true){
 					message+=" the";
 				}
-				message+=" "+target.nameSing;
+				message+=" "+target[0].nameSing;
 			}
-			message+=" for "+(targetOldHealth-target.health)+" damage!";
+			message+=" for "+(targetOldHealth-target[0].health)+" damage!";
 			return message;
 		});
 		var bash=new move("Bash",function(user, target){
-			var targetOldHealth=target.health;
-			target.health-=getStandardDamageCurve(user,target,0,0,1);
+			var targetOldHealth=target[0].health;
+			target[0].health-=getStandardDamageCurve(user,target[0],0,0,1);
 			var message="";
 			if (user==player){
 				message+="You";
@@ -71,21 +71,21 @@
 				message+=" "+user.nameSing;
 			}
 			message+=" bashed";
-			if (target==player){
+			if (target[0]==player){
 				message+=" you";
 			}
 			else{
-				if (target.generic==true){
+				if (target[0].generic==true){
 					message+=" the";
 				}
-				message+=" "+target.nameSing;
+				message+=" "+target[0].nameSing;
 			}
-			message+=" for "+(targetOldHealth-target.health)+" damage!";
+			message+=" for "+(targetOldHealth-target[0].health)+" damage!";
 			return message;
 		});
 		var poisonSlash=new move("Poison Slash",function(user, target){
-			var targetOldHealth=target.health;
-			target.health-=getStandardDamageCurve(user,target,0,0,1);
+			var targetOldHealth=target[0].health;
+			target[0].health-=getStandardDamageCurve(user,target[0],0,0,1);
 			var message="";
 			if (user==player){
 				message+="You";
@@ -97,55 +97,55 @@
 				message+=" "+user.nameSing;
 			}
 			message+=" used Poison Slash on";
-			if (target==player){
+			if (target[0]==player){
 				message+=" you";
 			}
 			else{
-				if (target.generic==true){
+				if (target[0].generic==true){
 					message+=" the";
 				}
-				message+=" "+target.nameSing;
+				message+=" "+target[0].nameSing;
 			}
-			message+=" for "+(targetOldHealth-target.health)+" damage!";
+			message+=" for "+(targetOldHealth-target[0].health)+" damage!";
 			var i=0;
 			var isPoisoned=false;
-			for (i=0;i<target.statusEffect.length;i++){
-				if (target.statusEffect[i]==poison){
+			for (i=0;i<target[0].statusEffect.length;i++){
+				if (target[0].statusEffect[i]==poison){
 					isPoisoned=true;
 				}
 			}
 			if (isPoisoned==false && seed%4==0){
-				target.statusEffect.push(poison=new statusEffect("Poison",3,function(){
-					var targetOldHealth=target.health;
-					target.health-=Math.ceil(target.maxHealth/32);
+				target[0].statusEffect.push(poison=new statusEffect("Poison",3,function(){
+					var targetOldHealth=target[0].health;
+					target[0].health-=Math.ceil(target[0].maxHealth/32);
 					var message="";
-					if (target==player){
+					if (target[0]==player){
 						message+="You";
 					}
 					else{
-						if (target.generic==true){
+						if (target[0].generic==true){
 							message+="The";
 						}
-						message+=" "+target.nameSing;
+						message+=" "+target[0].nameSing;
 					}
-					message+=" took "+(targetOldHealth-target.health)+" damage from the poison!";
+					message+=" took "+(targetOldHealth-target[0].health)+" damage from the poison!";
 					return message;
 				}));
-				if (target==player){
+				if (target[0]==player){
 					message+="<br>You were poisoned!";
 				}
 				else{
-					if (target.generic==true){
+					if (target[0].generic==true){
 						message+="<br>The ";
 					}
-					message+=target.nameSing+" was poisoned!";
+					message+=target[0].nameSing+" was poisoned!";
 				}
 			}
 			return message;
 		});
 		var bladeCrash=new combo("Blade Crash",[slash,slash,stab],function(user, target){
-			var targetOldHealth=target.health;
-			target.health-=getStandardDamageCurve(user,target,3,0,0);
+			var targetOldHealth=target[0].health;
+			target[0].health-=getStandardDamageCurve(user,target[0],3,0,0);
 			var message="";
 			if (user==player){
 				message+="You";
@@ -157,16 +157,16 @@
 				message+=" "+user.nameSing;
 			}
 			message+=" used Blade Crash on";
-			if (target==player){
+			if (target[0]==player){
 				message+=" you";
 			}
 			else{
-				if (target.generic==true){
+				if (target[0].generic==true){
 					message+=" the";
 				}
-				message+=" "+target.nameSing;
+				message+=" "+target[0].nameSing;
 			}
-			message+=" for "+(targetOldHealth-target.health)+" damage!";
+			message+=" for "+(targetOldHealth-target[0].health)+" damage!";
 			return message;
 		});
 		var betaSword=new weaponPhysical("Beta Sword",slash,stab,bash,[bladeCrash]);
@@ -303,9 +303,9 @@
 			$("#attackInput").click(function expandAttackMenu(){
 				if (isAttackMenuExpanded==false){
 					$("#attackMenu").append("<br>|--<input id='primaryAttackInput' type='button' value="+player.weaponEquipped.primaryAttack.name+"><br>|--<input id='secondaryAttackInput' type='button' value="+player.weaponEquipped.secondaryAttack.name+"><br>|--<input id='tertiaryAttackInput' type='button' value="+player.weaponEquipped.tertiaryAttack.name+">");
-					$("#primaryAttackInput").click(function(){seed+=incrementSeed(0);battleTurn(player,enemy,player.weaponEquipped.primaryAttack,0);});
-					$("#secondaryAttackInput").click(function(){seed+=incrementSeed(1);battleTurn(player,enemy,player.weaponEquipped.secondaryAttack,1);});
-					$("#tertiaryAttackInput").click(function(){seed+=incrementSeed(2);battleTurn(player,enemy,player.weaponEquipped.tertiaryAttack,2);});
+					$("#primaryAttackInput").click(function(){seed+=incrementSeed(0);selectTarget(player,enemy,player.weaponEquipped.primaryAttack);});
+					$("#secondaryAttackInput").click(function(){seed+=incrementSeed(1);selectTarget(player,enemy,player.weaponEquipped.secondaryAttack);});
+					$("#tertiaryAttackInput").click(function(){seed+=incrementSeed(2);selectTarget(player,enemy,player.weaponEquipped.tertiaryAttack);});
 					isAttackMenuExpanded=true;
 				}
 				else{
@@ -315,7 +315,14 @@
 				}
 			});
 		}
-		function battleTurn(player, enemy, playerMove){
+		function selectTarget(player, enemy, playerMove){
+			$("#message").html("Select a target.");
+			$("#enemy").append("<button value='Target' onclick='function(){
+				var target=enemy;
+				battleTurn(player,enemy,playerMove,[target])
+			}'");
+		}
+		function battleTurn(player, enemy, playerMove, target){
 			var enemyMove=enemy.AI();
 			playerTurnLog[turnCount]=playerMove;
 			enemyTurnLog[turnCount]=enemyMove;
@@ -336,7 +343,7 @@
 				}
 			}
 			var message="";
-			message+=playerMove.execute(player,enemy);
+			message+=playerMove.execute(player,target);
 			for (i=0;i<player.statusEffect.length;i++){
 				message+="<br>"+player.statusEffect[i].execute();
 				player.statusEffect[i].durationRemaining--;
@@ -392,6 +399,7 @@
 	<style>
 	div.left{
 		float:left;
+		text-align:center;
 	}
 	</style>
 </html>
