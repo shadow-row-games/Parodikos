@@ -296,7 +296,7 @@
 				$("#enemy").append(" ");
 			}
 			$("#enemy").append("|<br>\\----------------/");
-			$("#mainText").append("<br><br><br><br><br><div id='player'></div>");
+			$("#mainText").append("<br><br><br><br><br><br><br><div id='player'></div>");
 			$("#player").append("<br><br>"+player.nameSing+" <b>HP</b> "+player.health);
 			$("#mainText").append("<br><div id='message'>"+battleText+"</div>");
 			$("#mainText").append("<div id='attackMenu'><br><input id='attackInput' type='button' value='Attack'></div>");
@@ -317,10 +317,9 @@
 		}
 		function selectTarget(player, enemy, playerMove){
 			$("#message").html("Select a target.");
-			$("#enemy").append("<button value='Target' onclick='function(){
-				var target=enemy;
-				battleTurn(player,enemy,playerMove,[target])
-			}'");
+			$("#attackMenu").html("<input type='button' value='testing'>");
+			$("#enemy").append("<br><input id='targetInput' type='button' value='Target'>");
+			$("#targetInput").click(function(){var target=enemy;battleTurn(player,enemy,playerMove,[target]);});
 		}
 		function battleTurn(player, enemy, playerMove, target){
 			var enemyMove=enemy.AI();
@@ -343,7 +342,7 @@
 				}
 			}
 			var message="";
-			message+=playerMove.execute(player,target);
+			message+=playerMove.execute(player,target[0]);
 			for (i=0;i<player.statusEffect.length;i++){
 				message+="<br>"+player.statusEffect[i].execute();
 				player.statusEffect[i].durationRemaining--;
