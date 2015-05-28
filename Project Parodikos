@@ -260,7 +260,7 @@
 			if (player.nameSing=="" || isNaN(seed)){
 				return;
 			}
-			$("#mainText").html("What difficulty do you want to play on?<br>(This cannot be changed once set.)<br><br><input type='button' value='Normal' onclick='battle([var beta0=$.extend(true,{},beta),var beta1=$.extend(true,{},beta)])'>");
+			$("#mainText").html("What difficulty do you want to play on?<br>(This cannot be changed once set.)<br><br><input type='button' value='Normal' onclick='battle([beta,beta])'>");
 		}
 		function battle(enemy){
 			turnCount=1;
@@ -268,7 +268,7 @@
 			enemyTurnLog=[];
 			var i=0;
 			for (i=0;i<enemy.length;i++){
-				enemy.health=enemy.maxHealth;
+				enemy[i]=$.extend(true,{},enemy[i]);
 				enemyTurnLog[i]=[];
 			}
 			battleDisplay(enemy,"");
@@ -355,7 +355,6 @@
 				}
 			}
 			var message="";
-			alert(target);
 			message+=playerMove.execute(player,target);
 			for (i=0;i<player.statusEffect.length;i++){
 				message+="<br>"+player.statusEffect[i].execute();
