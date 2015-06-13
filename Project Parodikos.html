@@ -224,7 +224,12 @@
 				for (j=0;j<8-Math.ceil(enemy[i].nameSing.length/2);j++){
 					$("#enemy"+i).append(" ");
 				}
-				$("#enemy"+i).append(enemy[i].nameSing);
+				if (enemy[i].health==0){
+					$("#enemy"+i).append("<s>"+enemy[i].nameSing+"</s>");
+				}
+				else{
+					$("#enemy"+i).append(enemy[i].nameSing);
+				}
 				for (j=0;j<8-Math.floor(enemy[i].nameSing.length/2);j++){
 					$("#enemy"+i).append(" ");
 				}
