@@ -73,7 +73,8 @@
 		var betaArmor=new armor("Beta Armor",0,0,0);
 		//Defining the player and enemies
 		var player=new playerCharacter();
-		player.weaponEquipped=betaSword;
+		player.weaponEquippedRight=betaSword;
+		player.weaponEquippedLeft=0;
 		var beta=new enemy("Beta","Betae",true,8,1,1,1,betaArmor,function(){
 			if (random(23)<=5){
 				return poisonSlash;
@@ -95,7 +96,8 @@
 			this.attack=1;
 			this.defense=1;
 			this.magic=1;
-			this.weaponEquipped=0;
+			this.weaponEquippedRight=0;
+			this.weaponEquippedLeft=0;
 			this.armorEquipped=0;
 			this.statusEffect=[];
 		}
@@ -213,7 +215,8 @@
 		}
 		//Graphical/input side of battle
 		function battleDisplay(enemy, battleText){
-			var isAttackMenuExpanded=false;
+			var isRightAttackMenuExpanded=false;
+			var isLeftAttackMenuExpanded=false;
 			var i=0;
 			var j=0;
 			//Displaying enemies
@@ -274,22 +277,33 @@
 			$("#player").append("|<br>\\----------------/");
 			//Battle message (mostly for attacking results)
 			$("#mainText").append("<br><br><br><br><br><br><div id='message'>"+battleText+"</div>");
-			$("#mainText").append("<div id='attackMenu'><br><input id='attackInput' type='button' value='Attack'></div>");
-			//Expandable attack menu
-			$("#attackInput").click(function expandAttackMenu(){
-				if (isAttackMenuExpanded==false){
-					$("#attackMenu").append("<br>|--<input id='primaryAttackInput' type='button' value="+player.weaponEquipped.primaryAttack.name+"><br>|--<input id='secondaryAttackInput' type='button' value="+player.weaponEquipped.secondaryAttack.name+"><br>|--<input id='tertiaryAttackInput' type='button' value="+player.weaponEquipped.tertiaryAttack.name+">");
-					$("#primaryAttackInput").click(function(){incrementSeed(0);selectTarget(player,enemy,player.weaponEquipped.primaryAttack);});
-					$("#secondaryAttackInput").click(function(){incrementSeed(1);selectTarget(player,enemy,player.weaponEquipped.secondaryAttack);});
-					$("#tertiaryAttackInput").click(function(){incrementSeed(2);selectTarget(player,enemy,player.weaponEquipped.tertiaryAttack);});
-					isAttackMenuExpanded=true;
+			//Add on the attack menu and possibly the other attack menu for the left-hand weapon
+			$("#mainText").append("<div id='attackMenuRight'><input id='attackInputRight' type='button' value='"+player.weaponEquippedRight.nameSing+"'></div>");
+			if (player.weaponEquippedLeft!=0){
+				$("#mainText").append("<br><div id='attackMenuLeft><input id='attackInputLeft' type='button' value="+player.weaponEquippedLeft.nameSing+">");
+			}
+			//Expandable attack menu (for right and left weapons)
+			$("#attackInputRight").click(function expandAttackMenuRight(){
+				if (isRightAttackMenuExpanded==false){
+					$("#attackMenuRight").append("<br>|--<input id='primaryAttackInputRight' type='button' value="+player.weaponEquippedRight.primaryAttack.name+"><br>|--<input id='secondaryAttackInputRight' type='button' value="+player.weaponEquippedRight.secondaryAttack.name+"><br>|--<input id='tertiaryAttackInputRight' type='button' value="+player.weaponEquippedRight.tertiaryAttack.name+">");
+					$("#primaryAttackInputRight").click(function(){incrementSeed(0);selectTarget(player,enemy,player.weaponEquippedRight.primaryAttack);});
+					$("#secondaryAttackInputRight").click(function(){incrementSeed(1);selectTarget(player,enemy,player.weaponEquippedRight.secondaryAttack);});
+					$("#tertiaryAttackInputRight").click(function(){incrementSeed(2);selectTarget(player,enemy,player.weaponEquippedRight.tertiaryAttack);});
+					isRightAttackMenuExpanded=true;
 				}
 				else{
-					$("#attackMenu").html("<br><input id='attackInput' type='button' value='Attack'>");
-					$("#attackInput").click(function(){expandAttackMenu();});
-					isAttackMenuExpanded=false;
+					$("#attackMenuRight").html("<br><input id='attackInputRight' type='button' value='Attack'>");
+					$("#attackInputRight").click(function(){expandAttackMenuRight();});
+					isRightAttackMenuExpanded=false;
 				}
 			});
+			$("#attackInputLeft").click(function expandAttackMenuLeft(){
+				if (isLeftAttackMenuExpanded==false){
+					$("#attackMenuLeft").append("<br>|--<input id='primaryAttackInputLeft' type='button' value="+player.weaponEquippedLeft.primaryAttack.name+"><br>|--<input id='secondaryAttackInputLeft' type='button' value="+player.weaponEquippedLeft.secondaryAttack.name+"><br>|--<input id='tertiaryAttackInputLeft' type='button' value="+player.weaponEquippedLeft.tertiaryAttack.name+">");
+					$("#primaryAttackInputLeft").click(function(){incrementSeed(3);selectTarget(player,enemy,player.weaponEquippedRight.primaryAttack);});
+					$("#secondaryAttackInputLeft").click(function(){incrementSeed(4);selectTarget(player,enemy,)})
+				}
+			})
 		}
 		//Target selection for moves
 		function selectTarget(player, enemy, playerMove){
