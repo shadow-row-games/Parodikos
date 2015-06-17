@@ -75,8 +75,8 @@
 		});
 		
 		//Defining equipment
-		var betaSword=new weaponPhysical("Beta Sword",slash,stab,bash,[bladeCrash]);
-		var betaAxe=new weaponPhysical("Beta Axe",slash,bash,0,[guillotineSweep]);
+		var betaSword=new weaponPhysical("Beta Sword",slash,stab,bash,[bladeCrash],false);
+		var betaAxe=new weaponPhysical("Beta Axe",slash,bash,0,[guillotineSweep],false);
 		var betaArmor=new armor("Beta Armor",0,0,0);
 		//Defining the player and enemies
 		var player=new playerCharacter();
@@ -121,12 +121,13 @@
 			this.statusEffect=[];
 			this.AI=AIParam;
 		}
-		function weaponPhysical(nameSingParam, attackPrimaryParam, attackSecondaryParam, attackTertiaryParam, comboParam){
+		function weaponPhysical(nameSingParam, attackPrimaryParam, attackSecondaryParam, attackTertiaryParam, comboParam, twoHandedParam){
 			this.nameSing=nameSingParam;
 			this.attackPrimary=attackPrimaryParam;
 			this.attackSecondary=attackSecondaryParam;
 			this.attackTertiary=attackTertiaryParam;
 			this.combo=comboParam;
+			this.twoHanded=twoHandedParam;
 		}
 		function armor(nameSingParam, slashDefenseParam, punctureDefenseParam, impactDefenseParam){
 			this.nameSing=nameSingParam;
@@ -292,28 +293,40 @@
 			//Expandable attack menu (for right and left weapons)
 			$("#attackInputRight").click(function expandAttackMenuRight(){
 				if (isRightAttackMenuExpanded==false){
-					$("#attackMenuRight").append("<br>|--<input id='attackPrimaryInputRight' type='button' value="+player.weaponEquippedRight.attackPrimary.name+"><br>|--<input id='attackSecondaryInputRight' type='button' value="+player.weaponEquippedRight.attackSecondary.name+"><br>|--<input id='attackTertiaryInputRight' type='button' value="+player.weaponEquippedRight.attackTertiary.name+">");
+					$("#attackMenuRight").append("<br>|--<input id='attackPrimaryInputRight' type='button' value='"+player.weaponEquippedRight.attackPrimary.name+"'>");
+					if (player.weaponEquippedRight.attackSecondary!=0){
+						$("#attackMenuRight").append("<br>|--<input id='attackSecondaryInputRight' type='button' value='"+player.weaponEquippedRight.attackSecondary.name+"'>");
+					}
+					if (player.weaponEquippedRight.attackTertiary!=0){
+						$("#attackMenuRight").append("<br>|--<input id='attackTertiaryInputRight' type='button' value='"+player.weaponEquippedRight.attackTertiary.name+"'>");
+					}
 					$("#attackPrimaryInputRight").click(function(){incrementSeed(0);selectTarget(player,enemy,player.weaponEquippedRight,player.weaponEquippedRight.attackPrimary);});
 					$("#attackSecondaryInputRight").click(function(){incrementSeed(1);selectTarget(player,enemy,player.weaponEquippedRight,player.weaponEquippedRight.attackSecondary);});
 					$("#attackTertiaryInputRight").click(function(){incrementSeed(2);selectTarget(player,enemy,player.weaponEquippedRight,player.weaponEquippedRight.attackTertiary);});
 					isRightAttackMenuExpanded=true;
 				}
 				else{
-					$("#attackMenuRight").html("<br><input id='attackInputRight' type='button' value='"+player.weaponEquippedRight.name+"'>");
+					$("#attackMenuRight").html("<input id='attackInputRight' type='button' value='"+player.weaponEquippedRight.nameSing+"'>");
 					$("#attackInputRight").click(function(){expandAttackMenuRight();});
 					isRightAttackMenuExpanded=false;
 				}
 			});
 			$("#attackInputLeft").click(function expandAttackMenuLeft(){
 				if (isLeftAttackMenuExpanded==false){
-					$("#attackMenuLeft").append("<br>|--<input id='attackPrimaryInputLeft' type='button' value='"+player.weaponEquippedLeft.attackPrimary.name+"'><br>|--<input id='attackSecondaryInputLeft' type='button' value='"+player.weaponEquippedLeft.attackSecondary.name+"'><br>|--<input id='attackTertiaryInputLeft' type='button' value='"+player.weaponEquippedLeft.attackTertiary.name+"'>");
+					$("#attackMenuLeft").append("<br>|--<input id='attackPrimaryInputLeft' type='button' value='"+player.weaponEquippedLeft.attackPrimary.name+"'>");
+					if (player.weaponEquippedLeft.attackSecondary!=0){
+						$("#attackMenuLeft").append("<br>|--<input id='attackSecondaryInputLeft' type='button' value='"+player.weaponEquippedLeft.attackSecondary.name+"'>");
+					}
+					if (player.weaponEquippedLeft.attackTertiary!=0){
+						$("#attackMenuLeft").append("<br>|--<input id='attackTertiaryInputLeft' type='button' value='"+player.weaponEquippedLeft.attackTertiary.name+"'>");
+					}
 					$("#attackPrimaryInputLeft").click(function(){incrementSeed(3);selectTarget(player,enemy,player.weaponEquippedLeft,player.weaponEquippedLeft.attackPrimary);});
 					$("#attackSecondaryInputLeft").click(function(){incrementSeed(4);selectTarget(player,enemy,player.weaponEquippedLeft,player.weaponEquippedLeft.attackSecondary);});
 					$("#attackTertiaryInputLeft").click(function(){incrementSeed(5);selectTarget(player.enemy,player.weaponEquippedLeft,player.weaponEquippedLeft.attackTertiary);});
 					isLeftAttackMenuExpanded=true;
 				}
 				else{
-					$("#attackMenuLeft").html("<br><input id='attackInputLeft' type='button' value='"+player.weaponEquippedLeft.name+"'>");
+					$("#attackMenuLeft").html("<input id='attackInputLeft' type='button' value='"+player.weaponEquippedLeft.nameSing+"'>");
 					$("#attackInputLeft").click(function(){expandAttackMenuLeft();});
 					isLeftAttackMenuExpanded=false;
 				}
@@ -323,6 +336,7 @@
 		function selectTarget(player, enemy, playerWeapon, playerMove){
 			$("#message").html("Select a target.");
 			$("#attackMenuRight").html("<br><input id='return' type='button' value='Back'>");
+			$("#attackMenuLeft").html("");
 			$("#return").click(function(){battleDisplay(enemy,"");});
 			var i=0;
 			for (i=0;i<enemy.length;i++){
