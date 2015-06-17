@@ -34,7 +34,7 @@
 				}
 			}
 			if (isPoisoned==false && random(13)<=2){
-				target[0].statusEffect.push(poison=new statusEffect("Poison",3,function(){
+				target[0].statusEffect.push($.extend({},poison=new statusEffect("Poison",3,function(){
 					var targetOldHealth=target[0].health;
 					target[0].health-=Math.ceil(target[0].maxHealth/32);
 					var message="";
@@ -49,7 +49,7 @@
 					}
 					message+=" took "+(targetOldHealth-target[0].health)+" damage from the poison!";
 					return message;
-				}));
+				})));
 				if (target[0]==player){
 					message+="<br>You were poisoned!";
 				}
@@ -65,15 +65,23 @@
 		//Defining Combos
 		var bladeCrash=new combo("Blade Crash",[slash,slash,stab],function(user, target){
 			var targetOldHealth=target[0].health;
-			target[0].health-=getStandardDamageCurve(user,target[0],3,0,0);
+			target[0].health-=getStandardDamageCurve(user,target[0],0,0,3);
 			return getStandardBattleMessage(user, target, "used Blade Crash on", targetOldHealth-target[0].health);
 		});
+		var guillotineSweep=new combo("Guillotine Sweep",[slash,bash,slash],function(user, target){
+			var targetOldHealth=target[0].health;
+			target[0].health-=getStandardDamageCurve(user,target[0],3,0,0);
+			return getStandardBattleMessage(user, target, "used Guillotine Sweep on", targetOldHealth-target[0].health);
+		});
+		
 		//Defining equipment
-		var betaSword=new weaponPhysical("Beta Sword",slash,stab,bash,[bladeCrash]);
+		var betaSword=new weaponPhysical("Beta Sword",slash,stab,bash,[bladeCrash],false);
+		var betaAxe=new weaponPhysical("Beta Axe",slash,bash,0,[guillotineSweep],false);
 		var betaArmor=new armor("Beta Armor",0,0,0);
 		//Defining the player and enemies
 		var player=new playerCharacter();
-		player.weaponEquipped=betaSword;
+		player.weaponEquippedRight=betaSword;
+		player.weaponEquippedLeft=betaAxe;
 		var beta=new enemy("Beta","Betae",true,8,1,1,1,betaArmor,function(){
 			if (random(23)<=5){
 				return poisonSlash;
@@ -95,7 +103,8 @@
 			this.attack=1;
 			this.defense=1;
 			this.magic=1;
-			this.weaponEquipped=0;
+			this.weaponEquippedRight=0;
+			this.weaponEquippedLeft=0;
 			this.armorEquipped=0;
 			this.statusEffect=[];
 		}
@@ -112,12 +121,13 @@
 			this.statusEffect=[];
 			this.AI=AIParam;
 		}
-		function weaponPhysical(nameSingParam, primaryAttackParam, secondaryAttackParam, tertiaryAttackParam, comboParam){
+		function weaponPhysical(nameSingParam, attackPrimaryParam, attackSecondaryParam, attackTertiaryParam, comboParam, twoHandedParam){
 			this.nameSing=nameSingParam;
-			this.primaryAttack=primaryAttackParam;
-			this.secondaryAttack=secondaryAttackParam;
-			this.tertiaryAttack=tertiaryAttackParam;
+			this.attackPrimary=attackPrimaryParam;
+			this.attackSecondary=attackSecondaryParam;
+			this.attackTertiary=attackTertiaryParam;
 			this.combo=comboParam;
+			this.twoHanded=twoHandedParam;
 		}
 		function armor(nameSingParam, slashDefenseParam, punctureDefenseParam, impactDefenseParam){
 			this.nameSing=nameSingParam;
@@ -213,7 +223,8 @@
 		}
 		//Graphical/input side of battle
 		function battleDisplay(enemy, battleText){
-			var isAttackMenuExpanded=false;
+			var isRightAttackMenuExpanded=false;
+			var isLeftAttackMenuExpanded=false;
 			var i=0;
 			var j=0;
 			//Displaying enemies
@@ -274,38 +285,69 @@
 			$("#player").append("|<br>\\----------------/");
 			//Battle message (mostly for attacking results)
 			$("#mainText").append("<br><br><br><br><br><br><div id='message'>"+battleText+"</div>");
-			$("#mainText").append("<div id='attackMenu'><br><input id='attackInput' type='button' value='Attack'></div>");
-			//Expandable attack menu
-			$("#attackInput").click(function expandAttackMenu(){
-				if (isAttackMenuExpanded==false){
-					$("#attackMenu").append("<br>|--<input id='primaryAttackInput' type='button' value="+player.weaponEquipped.primaryAttack.name+"><br>|--<input id='secondaryAttackInput' type='button' value="+player.weaponEquipped.secondaryAttack.name+"><br>|--<input id='tertiaryAttackInput' type='button' value="+player.weaponEquipped.tertiaryAttack.name+">");
-					$("#primaryAttackInput").click(function(){incrementSeed(0);selectTarget(player,enemy,player.weaponEquipped.primaryAttack);});
-					$("#secondaryAttackInput").click(function(){incrementSeed(1);selectTarget(player,enemy,player.weaponEquipped.secondaryAttack);});
-					$("#tertiaryAttackInput").click(function(){incrementSeed(2);selectTarget(player,enemy,player.weaponEquipped.tertiaryAttack);});
-					isAttackMenuExpanded=true;
+			//Add on the attack menu and possibly the other attack menu for the left-hand weapon
+			$("#mainText").append("<div id='attackMenuRight'><input id='attackInputRight' type='button' value='"+player.weaponEquippedRight.nameSing+"'></div>");
+			if (player.weaponEquippedLeft!=0){
+				$("#mainText").append("<br><div id='attackMenuLeft'><input id='attackInputLeft' type='button' value='"+player.weaponEquippedLeft.nameSing+"'>");
+			}
+			//Expandable attack menu (for right and left weapons)
+			$("#attackInputRight").click(function expandAttackMenuRight(){
+				if (isRightAttackMenuExpanded==false){
+					$("#attackMenuRight").append("<br>|--<input id='attackPrimaryInputRight' type='button' value='"+player.weaponEquippedRight.attackPrimary.name+"'>");
+					if (player.weaponEquippedRight.attackSecondary!=0){
+						$("#attackMenuRight").append("<br>|--<input id='attackSecondaryInputRight' type='button' value='"+player.weaponEquippedRight.attackSecondary.name+"'>");
+					}
+					if (player.weaponEquippedRight.attackTertiary!=0){
+						$("#attackMenuRight").append("<br>|--<input id='attackTertiaryInputRight' type='button' value='"+player.weaponEquippedRight.attackTertiary.name+"'>");
+					}
+					$("#attackPrimaryInputRight").click(function(){incrementSeed(0);selectTarget(player,enemy,player.weaponEquippedRight,player.weaponEquippedRight.attackPrimary);});
+					$("#attackSecondaryInputRight").click(function(){incrementSeed(1);selectTarget(player,enemy,player.weaponEquippedRight,player.weaponEquippedRight.attackSecondary);});
+					$("#attackTertiaryInputRight").click(function(){incrementSeed(2);selectTarget(player,enemy,player.weaponEquippedRight,player.weaponEquippedRight.attackTertiary);});
+					isRightAttackMenuExpanded=true;
 				}
 				else{
-					$("#attackMenu").html("<br><input id='attackInput' type='button' value='Attack'>");
-					$("#attackInput").click(function(){expandAttackMenu();});
-					isAttackMenuExpanded=false;
+					$("#attackMenuRight").html("<input id='attackInputRight' type='button' value='"+player.weaponEquippedRight.nameSing+"'>");
+					$("#attackInputRight").click(function(){expandAttackMenuRight();});
+					isRightAttackMenuExpanded=false;
 				}
 			});
+			$("#attackInputLeft").click(function expandAttackMenuLeft(){
+				if (isLeftAttackMenuExpanded==false){
+					$("#attackMenuLeft").append("<br>|--<input id='attackPrimaryInputLeft' type='button' value='"+player.weaponEquippedLeft.attackPrimary.name+"'>");
+					if (player.weaponEquippedLeft.attackSecondary!=0){
+						$("#attackMenuLeft").append("<br>|--<input id='attackSecondaryInputLeft' type='button' value='"+player.weaponEquippedLeft.attackSecondary.name+"'>");
+					}
+					if (player.weaponEquippedLeft.attackTertiary!=0){
+						$("#attackMenuLeft").append("<br>|--<input id='attackTertiaryInputLeft' type='button' value='"+player.weaponEquippedLeft.attackTertiary.name+"'>");
+					}
+					$("#attackPrimaryInputLeft").click(function(){incrementSeed(3);selectTarget(player,enemy,player.weaponEquippedLeft,player.weaponEquippedLeft.attackPrimary);});
+					$("#attackSecondaryInputLeft").click(function(){incrementSeed(4);selectTarget(player,enemy,player.weaponEquippedLeft,player.weaponEquippedLeft.attackSecondary);});
+					$("#attackTertiaryInputLeft").click(function(){incrementSeed(5);selectTarget(player.enemy,player.weaponEquippedLeft,player.weaponEquippedLeft.attackTertiary);});
+					isLeftAttackMenuExpanded=true;
+				}
+				else{
+					$("#attackMenuLeft").html("<input id='attackInputLeft' type='button' value='"+player.weaponEquippedLeft.nameSing+"'>");
+					$("#attackInputLeft").click(function(){expandAttackMenuLeft();});
+					isLeftAttackMenuExpanded=false;
+				}
+			})
 		}
 		//Target selection for moves
-		function selectTarget(player, enemy, playerMove){
+		function selectTarget(player, enemy, playerWeapon, playerMove){
 			$("#message").html("Select a target.");
-			$("#attackMenu").html("<br><input id='return' type='button' value='Back'>");
+			$("#attackMenuRight").html("<br><input id='return' type='button' value='Back'>");
+			$("#attackMenuLeft").html("");
 			$("#return").click(function(){battleDisplay(enemy,"");});
 			var i=0;
 			for (i=0;i<enemy.length;i++){
 				if (enemy[i].health>0){
 					$("#enemy"+i).append("<br><input id='targetSelect"+i+"' type='button' value='Target'>");
-					$("#targetSelect"+i).click(function(arg){return function(){battleTurn(player,enemy,playerMove,arg);};}([enemy[i]]));
+					$("#targetSelect"+i).click(function(arg){return function(){battleTurn(player,enemy,playerWeapon,playerMove,arg);};}([enemy[i]]));
 				}
 			}
 		}
 		//Computational side of the battle
-		function battleTurn(player, enemy, playerMove, target){
+		function battleTurn(player, enemy, playerWeapon, playerMove, target){
 			var enemyMove=[];
 			var i=0;
 			var j=0;
@@ -318,16 +360,16 @@
 				enemyTurnLog[i][turnCount]=enemyMove[i];
 			}
 			//Checks to see if your move is a combo; if so, then replace it
-			for (i=0;i<player.weaponEquipped.combo.length;i++){
-				if (turnCount>=player.weaponEquipped.combo[i].comboMove.length){
+			for (i=0;i<playerWeapon.combo.length;i++){
+				if (turnCount>=playerWeapon.combo[i].comboMove.length){
 					var isCombo=true;
-					for (j=0;j<player.weaponEquipped.combo[i].comboMove.length;j++){
-						if (!(player.weaponEquipped.combo[i].comboMove[j]==playerTurnLog[turnCount-player.weaponEquipped.combo[i].comboMove.length+j+1])){
+					for (j=0;j<playerWeapon.combo[i].comboMove.length;j++){
+						if (!(playerWeapon.combo[i].comboMove[j]==playerTurnLog[turnCount-playerWeapon.combo[i].comboMove.length+j+1])){
 							isCombo=false;
 						}
 					}
 					if (isCombo==true){
-						playerMove=player.weaponEquipped.combo[i];
+						playerMove=playerWeapon.combo[i];
 						playerTurnLog[turnCount]=playerMove;
 					}
 				}
