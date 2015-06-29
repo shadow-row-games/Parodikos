@@ -5,6 +5,109 @@
 	<pre id="mainText">Yo. Click <input type="button" value="here" onclick="mainMenu();"> to begin.</pre>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 	<script>
+		//Defining Objects
+		function playerCharacter(){
+			this.nameSing="";
+			this.generic=false;
+			this.maxHealth=100;
+			this.health=this.maxHealth;
+			this.attack=1;
+			this.defense=1;
+			this.magic=1;
+			this.weaponEquippedRight=0;
+			this.weaponEquippedLeft=0;
+			this.armorEquipped=0;
+			this.accessoryEquipped=0;
+			this.statusEffect=[];
+		}
+		function enemy(nameSingParam, namePlParam, genericParam, maxHealthParam, attackParam, defenseParam, magicParam, armorEquippedParam, accessoryEquippedParam, AIParam){
+			this.nameSing=nameSingParam;
+			this.namePl=namePlParam;
+			this.generic=genericParam;
+			this.maxHealth=maxHealthParam;
+			this.health=this.maxHealth;
+			this.attack=attackParam;
+			this.defense=defenseParam;
+			this.magic=magicParam;
+			this.armorEquipped=armorEquippedParam;
+			this.acccessoryEquipped=accessoryEquippedParam;
+			this.statusEffect=[];
+			this.AI=AIParam;
+		}
+		function weaponPhysical(nameSingParam, attackPrimaryParam, attackSecondaryParam, attackTertiaryParam, comboParam, twoHandedParam){
+			this.nameSing=nameSingParam;
+			this.attackPrimary=attackPrimaryParam;
+			this.attackSecondary=attackSecondaryParam;
+			this.attackTertiary=attackTertiaryParam;
+			this.combo=comboParam;
+			this.twoHanded=twoHandedParam;
+		}
+		function move(nameParam, executeParam){
+			this.name=nameParam;
+			this.execute=executeParam;
+		}
+		function combo(nameParam, comboMoveParam, executeParam){
+			this.name=nameParam;
+			this.comboMove=comboMoveParam;
+			this.execute=executeParam;
+		}
+		function statusEffect(nameParam, durationTotalParam, executeParam){
+			this.name=nameParam;
+			this.durationTotal=durationTotalParam;
+			this.durationRemaining=this.durationTotal;
+			this.execute=executeParam;
+		}
+		function armor(nameSingParam, slashDefenseParam, punctureDefenseParam, impactDefenseParam){
+			this.nameSing=nameSingParam;
+			this.slashDefense=slashDefenseParam;
+			this.punctureDefense=punctureDefenseParam;
+			this.impact=impactDefenseParam;
+		}
+		function accessory(nameSingParam, attackBonusParam, defenseBonusParam, magicBonusParam){
+			this.nameSing=nameSingParam;
+			this.attackBonus=attackBonusParam;
+			this.defenseBonus=defenseBonusParam;
+			this.magicBonus=magicBonusParam;
+		}
+		//This is the "standard damage curve" that all attacks should follow. NO DECIMALS
+		function getStandardDamageCurve(user, target, slash, puncture, impact){
+			var damage=Math.ceil(slash/4)+Math.ceil(puncture/4)+Math.ceil(impact/4);
+			if ((1/8)*(2*Math.pow((user.attack+slash)-(target.defense+target.armorEquipped.slashDefense),2)+Math.pow(-1,(user.attack+slash)-(target.defense+target.armorEquipped.slashDefense))+7)>0){
+				damage+=Math.ceil((1/8)*(2*Math.pow((user.attack+slash)-(target.defense+target.armorEquipped.slashDefense),2)+Math.pow(-1,(user.attack+slash)-(target.defense+target.armorEquipped.slashDefense))+7));
+			}
+			if ((1/8)*(2*Math.pow((user.attack+puncture)-(target.defense+target.armorEquipped.punctureDefense),2)+Math.pow(-1,(user.attack+puncture)-(target.defense+target.armorEquipped.punctureDefense))+7)>0){
+				damage+=Math.ceil((1/8)*(2*Math.pow((user.attack+puncture)-(target.defense+target.armorEquipped.punctureDefense),2)+Math.pow(-1,(user.attack+puncture)-(target.defense+target.armorEquipped.punctureDefense))+7));
+			}
+			if ((1/8)*(2*Math.pow((user.attack+impact)-(target.defense+target.armorEquipped.impactDefense),2)+Math.pow(-1,(user.attack+impact)-(target.defense+target.armorEquipped.impactDefense))+7)>0){
+				damage+=Math.ceil((1/8)*(2*Math.pow((user.attack+impact)-(target.defense+target.armorEquipped.impactDefense),2)+Math.pow(-1,(user.attack+impact)-(target.defense+target.armorEquipped.impactDefense))+7));
+			}
+			return damage;
+		}
+		//Returns a simple battle message
+		function getStandardBattleMessage(user, target, verb, damage){
+			var message="";
+			if (user==player){
+				message+="You";
+			}
+			else{
+				if (user.generic==true){
+					message+="The ";
+				}
+				message+=user.nameSing;
+			}
+			message+=" "+verb;
+			if (target[0]==player){
+				message+=" you";
+			}
+			else{
+				if (target[0].generic==true){
+					message+=" the";
+				}
+				message+=" "+target[0].nameSing;
+			}
+			message+=" for "+damage+" damage!";
+			return message;
+		}
 		//Defining moves
 		//Status effects are defined inside the moves that cause them
 		var slash=new move("Slash",function(user, target){
@@ -73,16 +176,18 @@
 			target[0].health-=getStandardDamageCurve(user,target[0],3,0,0);
 			return getStandardBattleMessage(user, target, "used Guillotine Sweep on", targetOldHealth-target[0].health);
 		});
-		
 		//Defining equipment
 		var betaSword=new weaponPhysical("Beta Sword",slash,stab,bash,[bladeCrash],false);
 		var betaAxe=new weaponPhysical("Beta Axe",slash,bash,0,[guillotineSweep],false);
 		var betaArmor=new armor("Beta Armor",0,0,0);
+		var betaRing=new accessory("Beta Ring",0,0,0);
 		//Defining the player and enemies
 		var player=new playerCharacter();
 		player.weaponEquippedRight=betaSword;
 		player.weaponEquippedLeft=betaAxe;
-		var beta=new enemy("Beta","Betae",true,8,1,1,1,betaArmor,function(){
+		player.armorEquipped=betaArmor;
+		player.accessoryEquipped=betaRing;
+		var beta=new enemy("Beta","Betae",true,8,1,1,1,betaArmor,betaRing,function(){
 			if (random(23)<=5){
 				return poisonSlash;
 			}
@@ -94,101 +199,6 @@
 		increment=1;
 		const MIN_SEED_VALUE=128;
 		const MAX_SEED_VALUE=9000000000000000;
-		//Defining Objects
-		function playerCharacter(){
-			this.nameSing="";
-			this.generic=false;
-			this.maxHealth=100;
-			this.health=this.maxHealth;
-			this.attack=1;
-			this.defense=1;
-			this.magic=1;
-			this.weaponEquippedRight=0;
-			this.weaponEquippedLeft=0;
-			this.armorEquipped=0;
-			this.statusEffect=[];
-		}
-		function enemy(nameSingParam, namePlParam, genericParam, maxHealthParam, attackParam, defenseParam, magicParam, armorEquippedParam, AIParam){
-			this.nameSing=nameSingParam;
-			this.namePl=namePlParam;
-			this.generic=genericParam;
-			this.maxHealth=maxHealthParam;
-			this.health=this.maxHealth;
-			this.attack=attackParam;
-			this.defense=defenseParam;
-			this.magic=magicParam;
-			this.armorEquipped=armorEquippedParam;
-			this.statusEffect=[];
-			this.AI=AIParam;
-		}
-		function weaponPhysical(nameSingParam, attackPrimaryParam, attackSecondaryParam, attackTertiaryParam, comboParam, twoHandedParam){
-			this.nameSing=nameSingParam;
-			this.attackPrimary=attackPrimaryParam;
-			this.attackSecondary=attackSecondaryParam;
-			this.attackTertiary=attackTertiaryParam;
-			this.combo=comboParam;
-			this.twoHanded=twoHandedParam;
-		}
-		function armor(nameSingParam, slashDefenseParam, punctureDefenseParam, impactDefenseParam){
-			this.nameSing=nameSingParam;
-			this.slashDefense=slashDefenseParam;
-			this.punctureDefense=punctureDefenseParam;
-			this.impact=impactDefenseParam;
-		}
-		function move(nameParam, executeParam){
-			this.name=nameParam;
-			this.execute=executeParam;
-		}
-		function combo(nameParam, comboMoveParam, executeParam){
-			this.name=nameParam;
-			this.comboMove=comboMoveParam;
-			this.execute=executeParam;
-		}
-		function statusEffect(nameParam, durationTotalParam, executeParam){
-			this.name=nameParam;
-			this.durationTotal=durationTotalParam;
-			this.durationRemaining=this.durationTotal;
-			this.execute=executeParam;
-		}
-		//This is the "standard damage curve" that all attacks should follow. NO DECIMALS
-		function getStandardDamageCurve(user, target, slash, puncture, impact){
-			var damage=Math.ceil(slash/4)+Math.ceil(puncture/4)+Math.ceil(impact/4);
-			if ((1/8)*(2*Math.pow((user.attack+slash)-(target.defense+target.armorEquipped.slashDefense),2)+Math.pow(-1,(user.attack+slash)-(target.defense+target.armorEquipped.slashDefense))+7)>0){
-				damage+=Math.ceil((1/8)*(2*Math.pow((user.attack+slash)-(target.defense+target.armorEquipped.slashDefense),2)+Math.pow(-1,(user.attack+slash)-(target.defense+target.armorEquipped.slashDefense))+7));
-			}
-			if ((1/8)*(2*Math.pow((user.attack+puncture)-(target.defense+target.armorEquipped.punctureDefense),2)+Math.pow(-1,(user.attack+puncture)-(target.defense+target.armorEquipped.punctureDefense))+7)>0){
-				damage+=Math.ceil((1/8)*(2*Math.pow((user.attack+puncture)-(target.defense+target.armorEquipped.punctureDefense),2)+Math.pow(-1,(user.attack+puncture)-(target.defense+target.armorEquipped.punctureDefense))+7));
-			}
-			if ((1/8)*(2*Math.pow((user.attack+impact)-(target.defense+target.armorEquipped.impactDefense),2)+Math.pow(-1,(user.attack+impact)-(target.defense+target.armorEquipped.impactDefense))+7)>0){
-				damage+=Math.ceil((1/8)*(2*Math.pow((user.attack+impact)-(target.defense+target.armorEquipped.impactDefense),2)+Math.pow(-1,(user.attack+impact)-(target.defense+target.armorEquipped.impactDefense))+7));
-			}
-			return damage;
-		}
-		//Returns a simple battle message
-		function getStandardBattleMessage(user, target, verb, damage){
-			var message="";
-			if (user==player){
-				message+="You";
-			}
-			else{
-				if (user.generic==true){
-					message+="The ";
-				}
-				message+=user.nameSing;
-			}
-			message+=" "+verb;
-			if (target[0]==player){
-				message+=" you";
-			}
-			else{
-				if (target[0].generic==true){
-					message+=" the";
-				}
-				message+=" "+target[0].nameSing;
-			}
-			message+=" for "+damage+" damage!";
-			return message;
-		}
 		//Main Menu
 		function mainMenu(){
 			$("#mainText").html("<input type='button' value='New Game' onclick='setName();'><br><br><input type='button' value='Load Game' onclick='loadGame();'>");
